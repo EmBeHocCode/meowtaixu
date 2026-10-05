@@ -10,4 +10,4 @@ Build with `npm ci`, `npm test`, `npm run build` using Node >=22.12.0. Upload so
 
 The dedicated Nginx process uses the already installed binary as ubuntu, writes only its own run/log directories, and serves static files including video range requests. It is not Vite's development server. No backend dependencies are installed on the server.
 
-Public address: http://3.25.155.199:8082/ . This is HTTP, not HTTPS. AWS inbound rules must allow TCP 8082 for external access; local service health alone does not prove that the AWS firewall allows it. TLS/domain configuration is not part of this deployment.
+The public domain is `meowtaixu.dev`, routed by the system Nginx virtual host to the isolated service on `127.0.0.1:8082`. DNS A records for `@` and `www` must resolve to `3.25.155.199`. Because `.dev` is HSTS-preloaded, issue a valid TLS certificate before presenting the domain as usable. Direct public access to port 8082 is not required once the domain virtual host is active.
