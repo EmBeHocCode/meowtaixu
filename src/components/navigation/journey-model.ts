@@ -1,11 +1,11 @@
 export const chapters = [
-  { id: 'hero', label: 'Khởi hành' },
-  { id: 'about', label: 'Về tôi' },
-  { id: 'expertise', label: 'Chuyên môn' },
-  { id: 'skills', label: 'Kỹ năng' },
-  { id: 'focus', label: 'Định hướng' },
-  { id: 'projects', label: 'Dự án' },
-  { id: 'connect', label: 'Kết nối' },
+  { id: 'hero', label: 'Nhập cảnh' },
+  { id: 'about', label: 'Thân thế' },
+  { id: 'expertise', label: 'Sở tu' },
+  { id: 'skills', label: 'Công pháp' },
+  { id: 'focus', label: 'Đạo lộ' },
+  { id: 'projects', label: 'Bí cảnh' },
+  { id: 'connect', label: 'Truyền âm' },
 ] as const;
 
 export function chapterIndex(hash: string) {

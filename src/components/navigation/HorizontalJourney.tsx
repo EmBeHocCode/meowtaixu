@@ -149,7 +149,7 @@ export function HorizontalJourney({ entered }: { entered: boolean }) {
   return <div className="journey" data-active-chapter={chapters[active].id} data-moving={moving} data-reduced-motion={reduced}>
     <header className="journey__header" inert={!entered}>
       <a href="#hero" className="journey__brand" aria-label="Meow — Khởi hành">
-        <img src="/assets/xianxia/logo/logo-header.png" alt="" width="162" height="54" />
+        <img className="protected-artwork" draggable="false" src="/assets/xianxia/logo/logo-main.png" alt="" width="1254" height="1254" />
       </a>
       <button className="journey__menu-toggle" aria-expanded={menuOpen} aria-controls="chapter-navigation" onClick={() => setMenuOpen(!menuOpen)}>Chương {String(active + 1).padStart(2, '0')} · Mục lục</button>
       <nav id="chapter-navigation" className="journey__nav" aria-label="Các chương hành trình" data-open={menuOpen}>
@@ -162,7 +162,7 @@ export function HorizontalJourney({ entered }: { entered: boolean }) {
           {content[i]}
         </div>)}
       </div>
-      <img ref={mist} className="journey__mist" src={heroAssets.fog} alt="" aria-hidden="true" />
+      <img ref={mist} className="journey__mist protected-artwork" draggable="false" src={heroAssets.fog} alt="" aria-hidden="true" />
     </main>
     <footer className="journey__footer" inert={!entered}>
       <button onClick={() => navigate.current(active - 1)} disabled={active === 0 || moving} aria-label="Chương trước">←</button>

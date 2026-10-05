@@ -1,3 +1,5 @@
+import { ComingSoonChapter } from '../../components/common/ComingSoonChapter';
+
 export function Expertise() {
-  return <section id="expertise" aria-labelledby="expertise-heading"><h2 id="expertise-heading">Expertise</h2></section>;
+  return <ComingSoonChapter id="expertise" headingId="expertise-heading" index="03" title="SỞ TU" />;
 }

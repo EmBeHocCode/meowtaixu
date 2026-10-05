@@ -9,28 +9,72 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const at = (path) => resolve(root, path);
 const digest = (path) => createHash('sha256').update(readFileSync(at(path))).digest('hex');
 
-test('Vietnamese typography retains Latin and Vietnamese true-italic font assets', () => {
+test('Vietnamese typography bundles display, body and Chinese font families', () => {
   assert.match(readFileSync(at('index.html'), 'utf8'), /<html lang="vi">/);
+  const main = readFileSync(at('src/main.tsx'), 'utf8');
   const css = readFileSync(at('src/sections/Hero/hero.css'), 'utf8');
-  assert.match(css, /\.hero__poem \{ font-family: 'Hero Noto Serif'/);
-  for (const subset of ['latin', 'vietnamese']) {
-    const file = `noto-serif-${subset}-400-italic.woff2`;
-    assert.ok(css.includes(file));
-    assert.equal(readFileSync(at(`public/fonts/noto-serif/${file}`)).toString('ascii', 0, 4), 'wOF2');
-  }
+  for (const fontImport of ['be-vietnam-pro/vietnamese-400.css', 'be-vietnam-pro/vietnamese-500.css',
+    'be-vietnam-pro/vietnamese-600.css', 'noto-serif-display/vietnamese-400.css',
+    'noto-serif-display/vietnamese-400-italic.css', 'noto-serif-display/vietnamese-500.css']) assert.ok(main.includes(fontImport), fontImport);
+  assert.equal(readFileSync(at('public/fonts/noto-serif-tc/noto-serif-tc-xianxia-400.woff2')).toString('ascii', 0, 4), 'wOF2');
+  assert.match(css, /\.hero__poem \{[^}]*font-family: var\(--font-editorial\)/);
 });
 
 test('Hero and About use corrected identity and distinguish GitHub from nickname', () => {
   const hero = readFileSync(at('src/sections/Hero/Hero.tsx'), 'utf8');
   const about = readFileSync(at('src/sections/About/About.tsx'), 'utf8');
-  for (const source of [hero, about]) {
-    assert.ok(source.includes('Nguyễn Lâm Hùng'));
-    assert.doesNotMatch(source, /Meow Ngáo|Meow Chill|Gom ý tưởng|giữa nhân gian|Học bằng cách làm|đến điều hữu ích/);
-  }
-  assert.ok(hero.includes('E-Commerce · Web Development · AI-assisted Workflow'));
-  assert.ok(!hero.includes('className="hero__poem"'));
-  assert.match(about, /GitHub<\/dt><dd>EmBeHocCode/);
-  assert.match(about, /Nickname<\/span><\/dt><dd>Meow/);
+  for (const source of [hero, about]) assert.doesNotMatch(source, /Meow Ngáo|Meow Chill|Gom ý tưởng|giữa nhân gian|Học bằng cách làm|đến điều hữu ích/);
+  assert.ok(!hero.includes('Nguyễn Lâm Hùng'));
+  assert.ok(about.includes('Nguyễn Lâm Hùng'));
+  assert.ok(hero.includes('<h1 id="hero-heading" className="sr-only">Nhập thế hành đạo</h1>'));
+  assert.ok(hero.includes('hero-title-desktop.webp'));
+  assert.ok(hero.includes('<span lang="zh-Hant">道號</span>'));
+  assert.ok(hero.includes('Web · AI Bots · Automation'));
+  assert.ok(hero.includes('Lấy sản phẩm làm đường đi,'));
+  assert.ok(hero.includes('mượn AI làm pháp khí.'));
+  assert.ok(hero.includes('Mây qua núi, đường còn dài.'));
+  assert.ok(hero.includes('Ta cứ đi, điều đáng làm thì làm.'));
+  assert.doesNotMatch(hero, /<br \/>/);
+  assert.ok(hero.includes('01 —</span> NHẬP CẢNH'));
+  assert.ok(about.includes('Phàm danh Nguyễn Lâm Hùng, đạo hiệu Meow.'));
+  assert.ok(about.includes('web và AI bots'));
+  assert.ok(about.includes('Web Products<br />AI Bots<br />Automation<br />AI-assisted Workflow'));
+  assert.doesNotMatch(about, /theo học ngành|game và những công cụ nhỏ/);
+  assert.doesNotMatch(hero + about, /\b(?:mình|tôi)\b/i);
+  assert.match(about, /GitHub<\/span><\/dt><dd lang="en">EmBeHocCode/);
+  assert.match(about, /道號<\/span> \/ Đạo hiệu<\/dt><dd>Meow/);
+});
+
+test('Hero title artwork is optimized, semantic and protected without disabling body selection', () => {
+  const png = readFileSync(at('public/assets/xianxia/title/hero-title-desktop.png'));
+  const webp = readFileSync(at('public/assets/xianxia/title/hero-title-desktop.webp'));
+  const hero = readFileSync(at('src/sections/Hero/Hero.tsx'), 'utf8');
+  const protection = readFileSync(at('src/hooks/useProtectedArtwork.ts'), 'utf8');
+  const global = readFileSync(at('src/styles/global.css'), 'utf8');
+  assert.equal(png.readUInt32BE(16), 2172);
+  assert.equal(png.readUInt32BE(20), 724);
+  assert.equal(webp.toString('ascii', 0, 4), 'RIFF');
+  assert.equal(webp.toString('ascii', 8, 12), 'WEBP');
+  assert.ok(webp.length < 600000);
+  assert.match(hero, /className="hero__title-art protected-artwork"/);
+  assert.match(hero, /draggable="false"/);
+  assert.match(protection, /dragstart/);
+  assert.match(protection, /contextmenu/);
+  assert.match(global, /\.protected-artwork/);
+  assert.doesNotMatch(global, /body[^}]*user-select:\s*none/);
+});
+
+test('brand entrance separates the full lockup from the persistent emblem', () => {
+  const preloader = readFileSync(at('src/features/preloader/Preloader.tsx'), 'utf8');
+  const journey = readFileSync(at('src/components/navigation/HorizontalJourney.tsx'), 'utf8');
+  const html = readFileSync(at('index.html'), 'utf8');
+  assert.match(preloader, /logo-as\.png/);
+  assert.match(preloader, /brandVisible/);
+  assert.match(preloader, /reducedMotion \? 550 : 2800/);
+  assert.match(readFileSync(at('src/styles/global.css'), 'utf8'), /preloader-brand-reveal 2\.8s ease-in-out/);
+  assert.match(journey, /logo-main\.png/);
+  assert.doesNotMatch(journey, /logo-as\.png|logo-header\.png/);
+  assert.match(html, /<title>Meow — Web, E-Commerce &amp; AI<\/title>/);
 });
 
 test('dossier uses integrated accessible controls and no detached toggle', () => {
@@ -41,6 +85,15 @@ test('dossier uses integrated accessible controls and no detached toggle', () =>
   assert.ok(about.includes('aria-disabled={busy}'));
   assert.ok(about.includes('data-journey-input'));
   assert.doesNotMatch(about + css, /about__toggle/);
+});
+
+test('unfinished journey chapters share a bilingual coming-soon state', () => {
+  const placeholder = readFileSync(at('src/components/common/ComingSoonChapter.tsx'), 'utf8');
+  assert.ok(placeholder.includes('Coming soon'));
+  assert.ok(placeholder.includes('即将推出'));
+  for (const name of ['Expertise', 'Skills', 'Focus', 'Projects', 'Connect']) {
+    assert.ok(readFileSync(at(`src/sections/${name}/${name}.tsx`), 'utf8').includes('ComingSoonChapter'));
+  }
 });
 
 test('all requested architecture directories exist', () => {

@@ -1,3 +1,5 @@
+import { ComingSoonChapter } from '../../components/common/ComingSoonChapter';
+
 export function Connect() {
-  return <section id="connect" aria-labelledby="connect-heading"><h2 id="connect-heading">Connect</h2></section>;
+  return <ComingSoonChapter id="connect" headingId="connect-heading" index="07" title="TRUYỀN ÂM" />;
 }

@@ -1,3 +1,5 @@
+import { ComingSoonChapter } from '../../components/common/ComingSoonChapter';
+
 export function Projects() {
-  return <section id="projects" aria-labelledby="projects-heading"><h2 id="projects-heading">Projects</h2></section>;
+  return <ComingSoonChapter id="projects" headingId="projects-heading" index="06" title="BÍ CẢNH" />;
 }

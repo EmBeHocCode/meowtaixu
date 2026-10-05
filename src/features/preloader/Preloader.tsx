@@ -14,7 +14,10 @@ export function Preloader({ ready, onComplete }: PreloaderProps) {
   const [failed, setFailed] = useState(false);
   const [skip, setSkip] = useState(false);
   const [expired, setExpired] = useState(false);
-  const leaving = skip || expired || failed || (ready && (reducedMotion || ended));
+  const [brandVisible, setBrandVisible] = useState(false);
+  const [brandComplete, setBrandComplete] = useState(false);
+  const canRevealBrand = ready && (skip || expired || failed || reducedMotion || ended);
+  const leaving = brandComplete;
 
   useEffect(() => {
     if (reducedMotion || ended) return;
@@ -44,6 +47,13 @@ export function Preloader({ ready, onComplete }: PreloaderProps) {
   }, [reducedMotion]);
 
   useEffect(() => {
+    if (!canRevealBrand) return;
+    setBrandVisible(true);
+    const timer = window.setTimeout(() => setBrandComplete(true), reducedMotion ? 550 : 2800);
+    return () => window.clearTimeout(timer);
+  }, [canRevealBrand, reducedMotion]);
+
+  useEffect(() => {
     if (!leaving) return;
     const complete = () => {
       if (document.activeElement === skipRef.current) {
@@ -62,7 +72,7 @@ export function Preloader({ ready, onComplete }: PreloaderProps) {
   }, [leaving, reducedMotion, onComplete]);
 
   return (
-    <div ref={overlayRef} className="preloader" data-preloader data-state={leaving ? 'leaving' : 'loading'}>
+    <div ref={overlayRef} className="preloader" data-preloader data-state={leaving ? 'leaving' : brandVisible ? 'brand' : 'loading'}>
       {!reducedMotion && <video
         ref={videoRef}
         className="preloader__video"
@@ -72,6 +82,9 @@ export function Preloader({ ready, onComplete }: PreloaderProps) {
         onEnded={() => setEnded(true)}
         onError={() => setFailed(true)}
       />}
+      {brandVisible && <div className="preloader__brand" aria-hidden="true">
+        <img className="protected-artwork" draggable="false" src="/assets/xianxia/logo/logo-as.png" alt="" width="2172" height="724" />
+      </div>}
       <span className="sr-only" role="status">Loading portfolio</span>
       <button ref={skipRef} className="preloader__skip" onClick={() => setSkip(true)}>Skip intro</button>
     </div>

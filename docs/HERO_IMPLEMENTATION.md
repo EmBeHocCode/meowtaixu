@@ -1,6 +1,6 @@
 # Hero implementation
 
-Completed 2026-10-05 in `E:\bio-meowtutien` only. Production was not opened or touched for this task. About, Expertise, Skills, Focus, Projects, Connect, global CSS, the preloader component and the loading MP4 remain byte-for-byte unchanged (regression hash test).
+Completed 2026-10-05 in `E:\bio-meowtutien` only. Production was not opened or touched. This document records the original Hero milestone; the later final-polish pass updated Hero/About copy, the preloader brand handoff and header logo while keeping Expertise, Skills, Focus, Projects and Connect unchanged.
 
 ## Run and review
 
@@ -10,7 +10,7 @@ Screenshots: `docs/verification/hero-desktop.png` (1440 x 900), `hero-mobile.png
 
 ## Content and composition
 
-Identity: **Meow Ngáo**. Subtitle: **E-Commerce Student & AI-assisted Builder**. A short original poetic line reads “Gom ý tưởng giữa mây ngàn, xây điều hữu ích giữa nhân gian.” Primary CTA goes to existing `#about`, without adding an About transition. Existing project/contact anchors are preserved. Decorative Chinese text is limited to `入仙境` and hidden from accessibility reading order. All identity, navigation and CTA text is HTML, not WebGL.
+Hero identity: **Meow**. The real name **Nguyễn Lâm Hùng** is intentionally introduced in About instead of being repeated here. Professional context: **E-Commerce · Web Development · AI-assisted Workflow**. The current short personal note reads “Mây cứ trôi, mình cứ làm. Chậm một chút, miễn thứ làm ra có ích.” Primary CTA goes to existing `#about`, without adding a new heavy transition. Existing project/contact anchors are preserved. Decorative Chinese text is limited to `入仙境` and hidden from accessibility reading order. All identity, navigation and CTA text is HTML, not WebGL.
 
 Hero alone fills the viewport (minimum 720 px for short devices). Its scoped header/navigation replaces the temporary foundation header. Remaining sections remain in the original `app-content` container with original spacing and typography. No dashboard cards, placeholder scenery, CSS moon or gradient landscape is used. A flat translucent contrast scrim only improves text readability.
 
@@ -35,7 +35,7 @@ One lazy React Three Fiber Canvas lives inside Hero, not across the whole site. 
 
 The camera smoothly damps toward pointer offsets of at most 0.12 / 0.055 world units; no pointer camera motion on touch/mobile. Early scroll can move it forward by at most 0.12 and down 0.06 units and add only 0.07 fog opacity. No pinning, timeline-driven About transition or scroll hijacking is added. Mountains and pavilion have no independent oscillation. Fog gently drifts over long cycles. Only 26 muted-gold specks on desktop / 8 on mobile float slowly; no bloom/postprocessing/particle explosion.
 
-Existing video timing and failure paths are untouched. `entered` from AppShell triggers a 1.6-second HTML content fade with brief blur and a 2.4-second generated-mist reveal. Static image layers are present immediately; optional WebGL loads only after the preloader completes and crossfades in after textures resolve. The readable Hero never waits on Canvas.
+The loading video retains its full non-looping playback and failure paths, then hands off to a 1.45-second `logo-as.png` brand reveal. `entered` from AppShell triggers only after that handoff, followed by the existing HTML content fade and generated-mist reveal. Static image layers are present immediately; optional WebGL loads only after the preloader completes and crossfades in after textures resolve. The readable Hero never waits on Canvas.
 
 ## Performance and fallback
 

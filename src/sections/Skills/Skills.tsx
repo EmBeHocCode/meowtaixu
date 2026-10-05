@@ -1,3 +1,5 @@
+import { ComingSoonChapter } from '../../components/common/ComingSoonChapter';
+
 export function Skills() {
-  return <section id="skills" aria-labelledby="skills-heading"><h2 id="skills-heading">Skills</h2></section>;
+  return <ComingSoonChapter id="skills" headingId="skills-heading" index="04" title="CÔNG PHÁP" />;
 }

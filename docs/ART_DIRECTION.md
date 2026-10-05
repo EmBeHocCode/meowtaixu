@@ -59,3 +59,9 @@ At that Hero milestone, no other section was redesigned. No flying sword, extra 
 ## About implementation — 2026-10-05
 
 The subsequently authorized About section extends the same mountain world into a quiet scholar's record. Existing distant pavilion, mountains, bamboo and mist frame a left-side Vietnamese narrative and a single generated hanging scroll with selectable HTML dossier content on the right. Chinese 關於我 is an occasional vertical decorative accent, English is secondary metadata, and Vietnamese carries the explanation and profile labels. The boundary is blended through mist and feathered artwork rather than a rectangular UI divider. About uses lightweight layered imagery, not a new WebGL scene. See `ABOUT_IMPLEMENTATION.md` for asset provenance, exact scope and verification. No section after About has been implemented.
+
+## Hero + About final polish — 2026-10-05
+
+The loading video now hands off to the full `logo-as.png` lockup before the existing mist-led Hero reveal. The persistent header uses the compact `logo-main.png` emblem. Hero remains visually sparse and adds one short Vietnamese personal note; About uses natural first-person copy and keeps the interactive scroll as its primary artifact. No new environment assets or heavy transitions were added, and chapters after About remain structural placeholders.
+
+The final title pass replaces the visible HTML display title with a transparent authored `Nhập thế hành đạo` artwork while retaining a semantic H1 and readable text fallback. A low-frequency masked shimmer and luminance breath keep it alive without neon or arcade motion; reduced-motion visitors receive a static title. Decorative images use scoped drag, selection, long-press and context-menu protection only—body text, controls and browser shortcuts remain unaffected.

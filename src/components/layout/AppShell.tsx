@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Preloader } from '../../features/preloader/Preloader';
 import { HorizontalJourney } from '../navigation/HorizontalJourney';
+import { useProtectedArtwork } from '../../hooks/useProtectedArtwork';
 
 export function AppShell() {
+  useProtectedArtwork();
   const [ready, setReady] = useState(false);
   const [entered, setEntered] = useState(false);
   const complete = useCallback(() => setEntered(true), []);

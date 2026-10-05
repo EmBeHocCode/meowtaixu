@@ -1,5 +1,29 @@
+@font-face {
+  font-family: 'Noto Serif TC';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/noto-serif-tc/noto-serif-tc-xianxia-400.woff2') format('woff2');
+}
+
 :root {
-  font-family: system-ui, sans-serif;
+  --font-display: 'Noto Serif Display', 'Noto Serif', Georgia, 'Times New Roman', serif;
+  --font-body: 'Be Vietnam Pro', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-editorial: 'Noto Serif Display', 'Noto Serif', Georgia, 'Times New Roman', serif;
+  --font-chinese: 'Noto Serif TC', 'Noto Serif SC', 'Noto Serif CJK TC', 'Noto Serif CJK SC', 'Songti TC', 'STSong', serif;
+  --type-display-hero: clamp(3.5rem, 4.8vw, 5.25rem);
+  --type-display-section: clamp(2rem, 2.7vw, 3.1rem);
+  --type-heading-artifact: clamp(1.05rem, 1rem + 0.3vw, 1.25rem);
+  --type-body: clamp(0.98rem, 0.94rem + 0.2vw, 1.08rem);
+  --type-secondary: clamp(0.84rem, 0.8rem + 0.18vw, 0.96rem);
+  --type-label: clamp(0.74rem, 0.7rem + 0.16vw, 0.88rem);
+  --type-micro: clamp(0.64rem, 0.61rem + 0.12vw, 0.7rem);
+  --type-nav: clamp(0.76rem, 0.72rem + 0.18vw, 0.92rem);
+  --leading-display: 1.08;
+  --leading-heading: 1.14;
+  --leading-body: 1.75;
+  --tracking-label: 0.18em;
+  font-family: var(--font-body);
   color: #eeeae1;
   background: #080d14;
   color-scheme: dark;
@@ -9,7 +33,8 @@
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; min-width: 280px; }
+.protected-artwork { -webkit-user-drag: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+body { margin: 0; min-width: 280px; font-family: var(--font-body); }
 a { color: inherit; text-underline-offset: 0.2em; }
 button { font: inherit; cursor: pointer; }
 :focus-visible { outline: 2px solid #eeeae1; outline-offset: 4px; }
@@ -19,12 +44,19 @@ nav ul { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; padding: 0; list-s
 section { padding-block: 2rem; scroll-margin-top: 1rem; }
 h1, h2 { margin: 0; }
 .scene-root { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
-.preloader { position: fixed; inset: 0; z-index: 100; background: #000; pointer-events: none; display: grid; place-items: center; }
-.preloader__video { width: min(900px, calc(100% - 2rem)); height: auto; max-height: calc(100svh - 6rem); object-fit: contain; display: block; }
+.preloader { position: fixed; inset: 0; z-index: 100; background: #000; pointer-events: none; display: grid; place-items: center; overflow: hidden; }
+.preloader__video { grid-area: 1 / 1; width: min(900px, calc(100% - 2rem)); height: auto; max-height: calc(100svh - 6rem); object-fit: contain; display: block; transition: opacity 480ms ease, filter 480ms ease; }
+.preloader[data-state='brand'] .preloader__video, .preloader[data-state='leaving'] .preloader__video { opacity: 0; filter: blur(3px); }
+.preloader__brand { grid-area: 1 / 1; width: min(680px, 68vw); display: grid; place-items: center; }
+.preloader__brand img { display: block; width: 100%; height: auto; object-fit: contain; opacity: 0; filter: drop-shadow(0 8px 30px rgb(183 162 122 / 14%)); animation: preloader-brand-reveal 2.8s ease-in-out both; }
+@keyframes preloader-brand-reveal { 0% { opacity: 0; transform: scale(0.975); filter: blur(5px); } 14.2857%, 85.7143% { opacity: 0.92; transform: scale(1); filter: blur(0) drop-shadow(0 8px 30px rgb(183 162 122 / 14%)); } 100% { opacity: 0; transform: scale(1.008); filter: blur(2px); } }
 .preloader__skip { position: absolute; right: 1.25rem; bottom: 1.25rem; padding: 0.5rem 0.75rem; color: #eeeae1; background: #080d14; border: 1px solid currentColor; pointer-events: auto; }
+.preloader[data-state='brand'] .preloader__skip, .preloader[data-state='leaving'] .preloader__skip { opacity: 0; pointer-events: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 .skip-link { position: fixed; top: 0.75rem; left: 0.75rem; z-index: 101; padding: 0.5rem; background: #080d14; transform: translateY(-200%); }
 .skip-link:focus { transform: translateY(0); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
+  .preloader__brand img { opacity: 0.9; filter: none; }
 }
+@media (max-width: 767px) { .preloader__brand { width: min(520px, 82vw); } }

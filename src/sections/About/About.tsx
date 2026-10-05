@@ -56,36 +56,37 @@ export function About({ active = true }: { active?: boolean }) {
   return <section ref={host} id="about" className="about" lang="vi" aria-labelledby="about-heading" data-active={active}>
     <div className="about__world" aria-hidden="true">
       <picture><source media="(max-width: 767px)" srcSet={heroAssets.mobileFar} />
-        <img className="about__mountains" src={heroAssets.far} alt="" loading="lazy" decoding="async" width="1672" height="941" />
+        <img className="about__mountains protected-artwork" draggable="false" src={heroAssets.far} alt="" loading="lazy" decoding="async" width="1672" height="941" />
       </picture>
-      <img className="about__pavilion" src={heroAssets.mid} alt="" loading="lazy" decoding="async" width="1600" height="900" />
-      <img className="about__bamboo" src={heroAssets.near} alt="" loading="lazy" decoding="async" width="1600" height="900" />
+      <img className="about__pavilion protected-artwork" draggable="false" src={heroAssets.mid} alt="" loading="lazy" decoding="async" width="1600" height="900" />
+      <img className="about__bamboo protected-artwork" draggable="false" src={heroAssets.near} alt="" loading="lazy" decoding="async" width="1600" height="900" />
     </div>
-    <img className="about__threshold-mist" src={heroAssets.fog} alt="" aria-hidden="true" loading="lazy" decoding="async" width="1200" height="675" />
-    <div className="about__reading" data-chapter-scroll tabIndex={0} role="region" aria-label="Nội dung Về tôi">
+    <img className="about__threshold-mist protected-artwork" draggable="false" src={heroAssets.fog} alt="" aria-hidden="true" loading="lazy" decoding="async" width="1200" height="675" />
+    <div className="about__reading" data-chapter-scroll tabIndex={0} role="region" aria-label="Nội dung Thân thế">
     <div className="about__layout">
       <div className="about__narrative">
         <p className="about__eyebrow" lang="en">ABOUT ME <span aria-hidden="true">—</span></p>
-        <h2 id="about-heading" className="about__section-label"><span aria-hidden="true">02 / </span>Về tôi</h2>
-        <p className="about__lead">Chào bạn, mình là Meow.</p>
+        <h2 id="about-heading" className="about__section-label"><span aria-hidden="true">02 / </span>THÂN THẾ</h2>
+        <p className="about__lead">Phàm danh Nguyễn Lâm Hùng, đạo hiệu Meow.</p>
         <div className="about__prose">
-          <p>Mình là <strong>Nguyễn Lâm Hùng</strong>, thường dùng tên <strong>Meow</strong> trên các dự án cá nhân. Hiện mình đang học ngành Thương mại điện tử và dành phần lớn thời gian để làm web, công cụ nhỏ và một vài dự án game.</p>
-          <p>Mình thích những thứ vừa có phần kỹ thuật, vừa giải quyết được một nhu cầu cụ thể. Vì vậy, các dự án của mình thường xoay quanh web, E-Commerce, automation và AI.</p>
-          <p>AI là một phần trong workflow của mình để làm nhanh hơn. Nhưng điều mình quan tâm nhất vẫn là hiểu vấn đề, tìm hướng giải quyết và tự hoàn thiện sản phẩm.</p>
+          <p>Sở tu khởi từ Thương mại điện tử, đạo lộ hiện tại nghiêng về web và AI bots. Phần lớn thời gian dành cho việc dựng nên những sản phẩm có thể giải quyết một nhu cầu rõ ràng, từ ý tưởng ban đầu cho tới lúc thực sự dùng được.</p>
+          <p>Điều đáng theo đuổi không nằm ở việc viết xong bao nhiêu tính năng, mà ở chỗ hiểu được vấn đề, chọn đúng hướng và khiến thứ được dựng nên có giá trị sử dụng.</p>
+          <p>AI được xem như một pháp khí trợ lực — giúp rút ngắn đường đi, tăng tốc thử nghiệm và mở rộng khả năng thực thi. Nhưng phương hướng và quyết định cuối cùng vẫn cần được nắm trong tay.</p>
+          <p>Đạo lộ còn dài. Web vẫn là mạch chính; AI là trợ lực đồng hành trên đường tiếp tục xây dựng và hoàn thiện sản phẩm.</p>
         </div>
       </div>
       <aside ref={dossier} className="about__dossier" aria-label="Thông tin cá nhân" data-seen={seen} data-open={open} data-busy={busy}>
-        <div className="about__scroll-shell" aria-hidden="true">{['paper', 'top', 'bottom'].map(part => <img key={part} className={`about__scroll-art about__scroll-art--${part}`} src="/assets/xianxia/props/about-scholar-scroll.webp" alt="" loading="lazy" decoding="async" width="1024" height="1536" />)}</div>
+        <div className="about__scroll-shell protected-artwork" aria-hidden="true">{['paper', 'top', 'bottom'].map(part => <img key={part} draggable="false" className={`about__scroll-art about__scroll-art--${part}`} src="/assets/xianxia/props/about-scholar-scroll.webp" alt="" loading="lazy" decoding="async" width="1024" height="1536" />)}</div>
         <div className="about__record" id="about-record" inert={!open || busy} aria-hidden={!open || busy}>
           <p className="about__record-label" lang="en">PERSONAL RECORD</p>
           <h3 id="about-record-heading">Thông tin cá nhân</h3>
           <dl>
-            <div><dt><span lang="zh-Hant">姓名</span> / <span lang="en">Name</span></dt><dd>Nguyễn Lâm Hùng</dd></div>
-            <div><dt><span lang="zh-Hant">別名</span> / <span lang="en">Nickname</span></dt><dd>Meow</dd></div>
-            <div><dt lang="en">GitHub</dt><dd>EmBeHocCode</dd></div>
-            <div><dt><span lang="zh-Hant">所在地</span> / <span lang="en">Location</span></dt><dd>TP. Hồ Chí Minh, Việt Nam</dd></div>
-            <div><dt><span lang="zh-Hant">專業</span> / <span lang="en">Major</span></dt><dd>Thương mại điện tử<br /><span lang="en">E-Commerce</span></dd></div>
-            <div><dt><span lang="zh-Hant">方向</span> / <span lang="en">Focus</span></dt><dd lang="en">Web Products<br />Automation<br />AI-assisted Workflow</dd></div>
+            <div><dt><span lang="zh-Hant">姓名</span> / Tên thật</dt><dd>Nguyễn Lâm Hùng</dd></div>
+            <div><dt><span lang="zh-Hant">道號</span> / Đạo hiệu</dt><dd>Meow</dd></div>
+            <div><dt><span lang="zh-Hant">玉簡</span> / <span lang="en">GitHub</span></dt><dd lang="en">EmBeHocCode</dd></div>
+            <div><dt><span lang="zh-Hant">所在</span> / Nơi ở</dt><dd>TP. Hồ Chí Minh, Việt Nam</dd></div>
+            <div><dt><span lang="zh-Hant">所修</span> / Sở tu</dt><dd>Thương mại điện tử<br /><span lang="en">E-Commerce</span></dd></div>
+            <div><dt><span lang="zh-Hant">所行</span> / Đạo lộ</dt><dd lang="en">Web Products<br />AI Bots<br />Automation<br />AI-assisted Workflow</dd></div>
           </dl>
         </div>
         <span className="about__inscription" lang="zh-Hant" aria-hidden="true">關於我</span>

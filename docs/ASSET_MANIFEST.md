@@ -4,9 +4,9 @@
 
 | Asset | Status | Intended use |
 | --- | --- | --- |
-| `public/assets/xianxia/logo/logo-main.png` | Existing master | Retained high-resolution transparent icon source; not loaded directly by the website. |
-| `public/assets/xianxia/logo/logo-as.png` | Existing master | Retained high-resolution transparent wordmark source; not loaded directly by the website. |
-| `public/assets/xianxia/logo/logo-header.png` | Prepared | Optimized transparent header/navigation wordmark. |
+| `public/assets/xianxia/logo/logo-main.png` | Existing master | Compact personal emblem in the persistent header; also source identity for favicon derivatives. |
+| `public/assets/xianxia/logo/logo-as.png` | Existing master | Full MEOW TAIXU lockup shown briefly between the loading video and Hero entrance. |
+| `public/assets/xianxia/logo/logo-header.png` | Prepared legacy derivative | Retained but no longer used in the persistent navigation. |
 | `public/assets/xianxia/logo/logo-web.png` | Prepared | Optimized square brand mark retained for compact placements. |
 | `public/assets/xianxia/logo/favicon-16.png`, `favicon-32.png`, `favicon-192.png` | Prepared | Browser tab and installable-site icons. |
 | `public/assets/xianxia/logo/apple-touch-icon.png` | Prepared | iOS home-screen icon. |
@@ -47,6 +47,12 @@ Full prompts and implementation detail: `HERO_IMPLEMENTATION.md`. Conversion hel
 One built-in ImageGen scroll supplies the personal dossier, while all readable text stays HTML. `public/assets/xianxia/props/about-scholar-scroll.png` is the 1024 × 1536 transparent master; `public/assets/xianxia/props/about-scholar-scroll.webp` is the 800 × 1200 runtime version (140,516 bytes). It is lazy-loaded. Alpha was verified; no CSS geometric scroll substitute is used. About reuses Hero mountains, the distant pavilion, bamboo/rocks and `vfx/fog-silk.webp`; no new environment, moon or particle asset was generated. Prompt and reproduction notes: [ABOUT_IMPLEMENTATION.md](ABOUT_IMPLEMENTATION.md).
 
 Typography update: `public/fonts/noto-serif/` contains self-hosted Latin/Vietnamese 400 italic WOFF2 files and their license, used for poetic Hero/About text. The older font-selection row below describes the foundation snapshot, not the current italic font state.
+
+## Hero title artwork — 2026-10-05
+
+Built-in ImageGen generated one transparent 3:1 title treatment with the exact Vietnamese wording `Nhập thế hành đạo`. The authored source remains at `public/assets/xianxia/title/hero-title-desktop.png` (2172 × 724; 1,630,816 bytes). The optimized runtime derivative is `public/assets/xianxia/title/hero-title-desktop.webp` (519,944 bytes). Mobile reuses the same responsive asset because it remains legible at the target width; no redundant mobile texture is loaded. Runtime styling deliberately reduces saturation to neutralize low-alpha color fringe while preserving the ivory, antique-gold and moonlit ink treatment.
+
+Final ImageGen prompt: transparent premium xianxia key-art wordmark using only the exact Vietnamese text `Nhập thế hành đạo`; wide 3:1–4:1 composition; ivory, parchment white, pale antique gold, moonlit silver and misty blue-grey; refined brush-calligraphy and classical serif fusion; no swords, dragons, characters, extra symbols, frame or watermark.
 
 ## Missing / not yet selected
 
