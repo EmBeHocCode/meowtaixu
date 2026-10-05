@@ -24,15 +24,10 @@ type LayerProps = Pick<HeroSceneProps, 'mobile' | 'motion'> & {
 };
 
 function LandscapeLayer({ url, z, motion, opacity = 1, color = '#ffffff', fog = 0, align = 0.5 }: LayerProps) {
-  const sourceTexture = useTexture(url);
-  const texture = useMemo(() => fog ? sourceTexture.clone() : sourceTexture, [sourceTexture, fog]);
+  const texture = useTexture(url);
   texture.colorSpace = SRGBColorSpace;
-  if (fog) {
-    texture.wrapS = RepeatWrapping;
-    texture.needsUpdate = true;
-  }
   const mesh = useRef<Mesh>(null);
-  const material = useRef<MeshBasicMaterial>(null);
+  const material = useRef<MeshBasicMaterial | ShaderMaterial>(null);
   const time = useRef(0);
   const { size } = useThree();
   // Use nominal camera depth so resizing preserves composition, without chasing camera motion.
@@ -42,20 +37,54 @@ function LandscapeLayer({ url, z, motion, opacity = 1, color = '#ffffff', fog = 
   const coverHeight = Math.max(height, width / aspect) * 1.055;
   const coverWidth = coverHeight * aspect;
   const x = (width - coverWidth) * (align - 0.5);
-  useEffect(() => () => { if (fog) texture.dispose(); }, [fog, texture]);
   useFrame((_state, delta) => {
     if (!fog || !mesh.current || !material.current) return;
     time.current += Math.min(delta, 0.08);
-    if (fog) {
-      const drift = fog === 1 ? 0.0065 : -0.0038;
-      texture.offset.x = (time.current * drift) % 1;
-      mesh.current.position.y = -height * 0.14 + Math.sin(time.current * (fog === 1 ? 0.07 : 0.045) + fog) * height * 0.006;
-      material.current.opacity = opacity + motion.current.scroll * 0.07;
-    }
+    const shader = material.current as ShaderMaterial;
+    shader.uniforms.uTime.value = time.current;
+    shader.uniforms.uOpacity.value = opacity + motion.current.scroll * 0.07;
   });
   return <mesh ref={mesh} position={[x, fog ? -height * 0.14 : 0, z]} renderOrder={z + 10}>
     <planeGeometry args={[coverWidth, coverHeight]} />
-    <meshBasicMaterial ref={material} map={texture} transparent depthWrite={false} toneMapped={false} opacity={opacity} color={color} />
+    {fog ? <shaderMaterial
+      ref={material as Ref<ShaderMaterial>}
+      transparent depthWrite={false} toneMapped={false}
+      uniforms={{
+        uMap: { value: texture },
+        uTime: { value: 0 },
+        uOpacity: { value: opacity },
+        uDirection: { value: fog === 1 ? 1 : -1 },
+        uLayer: { value: fog },
+      }}
+      vertexShader={`
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `}
+      fragmentShader={`
+        varying vec2 vUv;
+        uniform sampler2D uMap;
+        uniform float uTime;
+        uniform float uOpacity;
+        uniform float uDirection;
+        uniform float uLayer;
+        void main() {
+          vec2 flowUv = vUv;
+          flowUv.x += sin(uTime * (0.11 + uLayer * 0.018) + vUv.y * 5.2 + uLayer) * 0.024 * uDirection;
+          flowUv.y += sin(uTime * 0.065 + vUv.x * 3.7 + uLayer * 1.8) * 0.008;
+          vec4 texel = texture2D(uMap, clamp(flowUv, 0.0, 1.0));
+          float featherX = smoothstep(0.0, 0.16, vUv.x) * smoothstep(0.0, 0.16, 1.0 - vUv.x);
+          float featherY = smoothstep(0.0, 0.1, vUv.y) * smoothstep(0.0, 0.1, 1.0 - vUv.y);
+          float edgeMask = featherX * featherY;
+          gl_FragColor = vec4(texel.rgb, texel.a * uOpacity * edgeMask);
+        }
+      `}
+    /> : <meshBasicMaterial
+      ref={material as Ref<MeshBasicMaterial>}
+      map={texture} transparent depthWrite={false} toneMapped={false} opacity={opacity} color={color}
+    />}
   </mesh>;
 }
 
