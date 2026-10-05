@@ -13,6 +13,10 @@ import { heroAssets } from '../../data/hero-assets';
 import type { HeroSceneProps } from '../../types/hero';
 import { HeroCameraRig } from '../camera/HeroCameraRig';
 import { SpiritMotes } from '../particles/SpiritMotes';
+import { useEnvironment } from '../../features/environment';
+import { WeatherEffects } from './hero/WeatherEffects';
+import { createMovementRun, environmentMovementPaths, movementFacing, movementOpacity, sampleMovementPath } from '../../features/environment';
+import type { EnvironmentDebugEntity } from '../../features/environment';
 
 type LayerProps = Pick<HeroSceneProps, 'mobile' | 'motion'> & {
   url: string;
@@ -24,6 +28,7 @@ type LayerProps = Pick<HeroSceneProps, 'mobile' | 'motion'> & {
 };
 
 function LandscapeLayer({ url, z, motion, opacity = 1, color = '#ffffff', fog = 0, align = 0.5 }: LayerProps) {
+  const environment = useEnvironment();
   const texture = useTexture(url);
   texture.colorSpace = SRGBColorSpace;
   const mesh = useRef<Mesh>(null);
@@ -42,9 +47,11 @@ function LandscapeLayer({ url, z, motion, opacity = 1, color = '#ffffff', fog = 
     time.current += Math.min(delta, 0.08);
     const shader = material.current as ShaderMaterial;
     shader.uniforms.uTime.value = time.current;
-    shader.uniforms.uOpacity.value = opacity + motion.current.scroll * 0.07;
+    const density = fog === 3 ? environment.values.cloud * 0.07 : environment.values.fog * (fog === 1 ? 0.16 : 0.08);
+    shader.uniforms.uOpacity.value = opacity + motion.current.scroll * 0.07 + density;
+    shader.uniforms.uWind.value = environment.values.wind;
   });
-  return <mesh ref={mesh} position={[x, fog ? -height * 0.14 : 0, z]} renderOrder={z + 10}>
+  return <mesh ref={mesh} position={[x, fog === 3 ? height * 0.28 : fog ? -height * 0.14 : 0, z]} renderOrder={z + 10}>
     <planeGeometry args={[coverWidth, coverHeight]} />
     {fog ? <shaderMaterial
       ref={material as Ref<ShaderMaterial>}
@@ -55,6 +62,7 @@ function LandscapeLayer({ url, z, motion, opacity = 1, color = '#ffffff', fog = 
         uOpacity: { value: opacity },
         uDirection: { value: fog === 1 ? 1 : -1 },
         uLayer: { value: fog },
+        uWind: { value: 0.1 },
       }}
       vertexShader={`
         varying vec2 vUv;
@@ -70,10 +78,12 @@ function LandscapeLayer({ url, z, motion, opacity = 1, color = '#ffffff', fog = 
         uniform float uOpacity;
         uniform float uDirection;
         uniform float uLayer;
+        uniform float uWind;
         void main() {
           vec2 flowUv = vUv;
-          flowUv.x += sin(uTime * (0.11 + uLayer * 0.018) + vUv.y * 5.2 + uLayer) * 0.024 * uDirection;
-          flowUv.y += sin(uTime * 0.065 + vUv.x * 3.7 + uLayer * 1.8) * 0.008;
+          float flow = 0.6 + uWind * 1.8;
+          flowUv.x += sin(uTime * (0.11 + uLayer * 0.018) * flow + vUv.y * 5.2 + uLayer) * (0.018 + uWind * 0.018) * uDirection;
+          flowUv.y += sin(uTime * 0.065 * flow + vUv.x * 3.7 + uLayer * 1.8) * (0.006 + uWind * 0.006);
           vec4 texel = texture2D(uMap, clamp(flowUv, 0.0, 1.0));
           float featherX = smoothstep(0.0, 0.16, vUv.x) * smoothstep(0.0, 0.16, 1.0 - vUv.x);
           float featherY = smoothstep(0.0, 0.1, vUv.y) * smoothstep(0.0, 0.1, 1.0 - vUv.y);
@@ -97,6 +107,7 @@ function AnimatedOverlay({ url, z, kind, active, mobile }: {
   active: boolean;
   mobile: boolean;
 }) {
+  const environment = useEnvironment();
   const texture = useTexture(url);
   texture.colorSpace = SRGBColorSpace;
   const mesh = useRef<Mesh>(null);
@@ -117,9 +128,12 @@ function AnimatedOverlay({ url, z, kind, active, mobile }: {
       const phase = time.current % 7.2;
       const pulse = Math.exp(-Math.pow((phase - 1.45) / 0.54, 2));
       const afterglow = Math.exp(-Math.pow((phase - 2.25) / 0.42, 2)) * 0.42;
-      (material.current as MeshBasicMaterial).opacity = Math.min(mobile ? 0.13 : 0.23, (pulse + afterglow) * (mobile ? 0.13 : 0.23));
+      const weatherLight = 0.018 + environment.values.cloud * 0.035 + environment.values.lightning * 0.2;
+      (material.current as MeshBasicMaterial).opacity = Math.min(mobile ? 0.14 : 0.26, (pulse + afterglow) * weatherLight + environment.thunderPulse * 0.12);
     } else {
-      (material.current as ShaderMaterial).uniforms.uTime.value = time.current;
+      const shader = material.current as ShaderMaterial;
+      shader.uniforms.uTime.value = time.current;
+      shader.uniforms.uWind.value = environment.values.wind;
     }
   });
 
@@ -132,16 +146,18 @@ function AnimatedOverlay({ url, z, kind, active, mobile }: {
     /> : <shaderMaterial
       ref={material as Ref<ShaderMaterial>}
       transparent depthWrite={false} toneMapped={false}
-      uniforms={{ uMap: { value: texture }, uTime: { value: 0 }, uOpacity: { value: 0.78 } }}
+      uniforms={{ uMap: { value: texture }, uTime: { value: 0 }, uOpacity: { value: 0.78 }, uWind: { value: 0.1 } }}
       vertexShader={`
         varying vec2 vUv;
         uniform float uTime;
+        uniform float uWind;
         void main() {
           vUv = uv;
           vec3 p = position;
           float anchored = smoothstep(0.18, 1.0, uv.y);
-          p.x += sin(uTime * 0.55 + uv.y * 4.2) * anchored * 0.035;
-          p.y += sin(uTime * 0.31 + uv.x * 3.0) * anchored * 0.008;
+          float gust = 0.65 + uWind * 2.4;
+          p.x += sin(uTime * (0.42 + uWind * 0.8) + uv.y * 4.2) * anchored * (0.02 + uWind * 0.07) * gust;
+          p.y += sin(uTime * 0.31 + uv.x * 3.0) * anchored * (0.006 + uWind * 0.012);
           gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
         }
       `}
@@ -160,15 +176,15 @@ function AnimatedOverlay({ url, z, kind, active, mobile }: {
 
 type BirdFlightProps = {
   active: boolean;
-  direction: 1 | -1;
-  depth: number;
-  phase: number;
-  speed: number;
+  pathName: keyof typeof environmentMovementPaths;
+  offset: number;
   scale: number;
-  y: number;
 };
 
-function BirdFlight({ active, direction, depth, phase, speed, scale, y }: BirdFlightProps) {
+function BirdFlight({ active, pathName, offset, scale }: BirdFlightProps) {
+  const environment = useEnvironment();
+  const path = environmentMovementPaths[pathName];
+  const run = useRef(createMovementRun(path));
   const source = useTexture(heroAssets.birdFlightSprite);
   const texture = useMemo(() => {
     const copy = source.clone();
@@ -180,36 +196,70 @@ function BirdFlight({ active, direction, depth, phase, speed, scale, y }: BirdFl
     return copy;
   }, [source]);
   const mesh = useRef<Mesh>(null);
-  const elapsed = useRef(phase * 9);
+  const elapsed = useRef(run.current.durationMs * offset);
+  const waiting = useRef(0);
+  const lastDebug = useRef(0);
   const lastFrame = useRef(-1);
   const { size } = useThree();
+  const depth = -0.25 - (1 - path.depth) * 1.25;
   const height = 2 * Math.tan(35 * Math.PI / 360) * (12 - depth);
   const width = height * size.width / size.height;
-  const birdWidth = width * scale;
+  const birdWidth = width * scale * run.current.scale;
   const birdHeight = birdWidth * 0.5;
 
   useEffect(() => () => texture.dispose(), [texture]);
 
   useFrame((_state, delta) => {
     if (!active || !mesh.current) return;
-    elapsed.current += Math.min(delta, 0.08);
-    const progress = (elapsed.current * speed + phase) % 1;
-    const travelX = -width * 0.62 + progress * width * 1.24;
-    mesh.current.position.x = direction === 1 ? travelX : -travelX;
-    mesh.current.position.y = height * y + Math.sin(elapsed.current * 0.7 + phase * 6) * height * 0.008;
-    mesh.current.rotation.z = Math.sin(elapsed.current * 0.42 + phase * 4) * 0.018 * direction;
+    const deltaMs = Math.min(delta, 0.08) * 1000;
+    if (waiting.current > 0) {
+      waiting.current -= deltaMs;
+      mesh.current.visible = false;
+      return;
+    }
+    mesh.current.visible = true;
+    elapsed.current += deltaMs * (0.86 + environment.values.wind * 0.34);
+    if (elapsed.current >= run.current.durationMs) {
+      waiting.current = run.current.respawnDelayMs;
+      run.current = createMovementRun(path);
+      elapsed.current = 0;
+      mesh.current.visible = false;
+      return;
+    }
+    const progress = elapsed.current / run.current.durationMs;
+    const point = sampleMovementPath(path, progress, run.current);
+    const direction = movementFacing(path, progress);
+    mesh.current.position.x = (point.x - 0.5) * width;
+    mesh.current.position.y = (0.5 - point.y) * height;
+    mesh.current.rotation.z = Math.sin(elapsed.current * 0.00042 + offset * 4) * 0.018 * direction;
     mesh.current.scale.x = direction;
+    (mesh.current.material as MeshBasicMaterial).opacity = 0.62 * movementOpacity(path, progress);
 
-    const frame = Math.floor(elapsed.current * (5.4 + phase * 1.2)) % 8;
+    const frame = Math.floor(elapsed.current * 0.0062) % 8;
     if (frame !== lastFrame.current) {
       const column = frame % 4;
       const row = frame < 4 ? 0.5 : 0;
       texture.offset.set(column * 0.25, row);
       lastFrame.current = frame;
     }
+    if (import.meta.env.DEV && elapsed.current - lastDebug.current > 250) {
+      lastDebug.current = elapsed.current;
+      const detail: EnvironmentDebugEntity = {
+        id: `bird-${pathName}-${offset}`,
+        pathId: path.id,
+        x: point.x,
+        y: point.y,
+        progress,
+        direction,
+        speed: 1000 / run.current.durationMs,
+        frameIndex: frame,
+        depth,
+      };
+      window.dispatchEvent(new CustomEvent('environment-debug-entity', { detail }));
+    }
   });
 
-  return <mesh ref={mesh} position={[0, height * y, depth]} renderOrder={10.5 + depth * 0.01}>
+  return <mesh ref={mesh} position={[0, 0, depth]} renderOrder={10.5 + depth * 0.01}>
     <planeGeometry args={[birdWidth, birdHeight]} />
     <meshBasicMaterial map={texture} transparent depthWrite={false} toneMapped={false} opacity={0.62} blending={AdditiveBlending} />
   </mesh>;
@@ -217,13 +267,14 @@ function BirdFlight({ active, direction, depth, phase, speed, scale, y }: BirdFl
 
 function SpiritBirdFlights({ active }: { active: boolean }) {
   return <>
-    <BirdFlight active={active} direction={1} depth={-0.45} phase={0.08} speed={0.022} scale={0.052} y={0.23} />
-    <BirdFlight active={active} direction={1} depth={-0.6} phase={0.53} speed={0.017} scale={0.038} y={0.29} />
-    <BirdFlight active={active} direction={-1} depth={-0.75} phase={0.31} speed={0.014} scale={0.031} y={0.19} />
+    <BirdFlight active={active} pathName="birdsNear" offset={0.08} scale={0.052} />
+    <BirdFlight active={active} pathName="birdsNear" offset={0.53} scale={0.038} />
+    <BirdFlight active={active} pathName="birdsFar" offset={0.31} scale={0.031} />
   </>;
 }
 
 function Moon({ mobile }: { mobile: boolean }) {
+  const environment = useEnvironment();
   const texture = useTexture(heroAssets.moon);
   texture.colorSpace = SRGBColorSpace;
   const { size } = useThree();
@@ -233,18 +284,19 @@ function Moon({ mobile }: { mobile: boolean }) {
   const diameter = h * (mobile ? 0.13 : 0.2);
   return <mesh position={[w * (mobile ? 0.27 : 0.18), h * 0.285, z]} renderOrder={6}>
     <planeGeometry args={[diameter, diameter]} />
-    <meshBasicMaterial map={texture} transparent opacity={0.54} depthWrite={false} toneMapped={false} color="#b5c1c7" />
+    <meshBasicMaterial map={texture} transparent opacity={0.18 + environment.values.moonlight * 0.42} depthWrite={false} toneMapped={false} color="#b5c1c7" />
   </mesh>;
 }
 
 function FrameBudget({ active, mobile }: Pick<HeroSceneProps, 'active' | 'mobile'>) {
+  const environment = useEnvironment();
   const invalidate = useThree(state => state.invalidate);
   useEffect(() => {
-    if (!active) return;
+    if (!active || environment.paused) return;
     invalidate();
     const timer = window.setInterval(invalidate, 1000 / (mobile ? 20 : 30));
     return () => window.clearInterval(timer);
-  }, [active, mobile, invalidate]);
+  }, [active, mobile, invalidate, environment.paused]);
   return null;
 }
 
@@ -270,6 +322,7 @@ export function HeroWorld({ active, mobile, motion, onReady }: HeroSceneProps & 
     <HeroCameraRig motion={motion} mobile={mobile} />
     <LandscapeLayer url={mobile ? heroAssets.mobileFar : heroAssets.far} z={-6} mobile={mobile} motion={motion} color="#bcc7d0" align={mobile ? 0.62 : 0.5} />
     <AnimatedOverlay url={heroAssets.skyPulse} z={-5.9} kind="sky" active={active} mobile={mobile} />
+    <LandscapeLayer url={heroAssets.fog} z={-5.55} mobile={mobile} motion={motion} opacity={mobile ? 0.018 : 0.025} fog={3} />
     <Moon mobile={mobile} />
     <LandscapeLayer url={heroAssets.mid} z={-1} mobile={mobile} motion={motion} color="#b5c1cd" align={mobile ? 0.94 : 0.5} />
     {!mobile && <SpiritBirdFlights active={active} />}
@@ -278,5 +331,6 @@ export function HeroWorld({ active, mobile, motion, onReady }: HeroSceneProps & 
     {!mobile && <LandscapeLayer url={heroAssets.fog} z={2} mobile={mobile} motion={motion} opacity={0.09} fog={2} />}
     {!mobile && <AnimatedOverlay url={heroAssets.bambooTips} z={2.2} kind="vegetation" active={active} mobile={mobile} />}
     <SpiritMotes mobile={mobile} />
+    <WeatherEffects active={active} mobile={mobile} />
   </>;
 }

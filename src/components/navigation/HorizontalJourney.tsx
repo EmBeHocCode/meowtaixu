@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import gsap from 'gsap';
 import { useReducedMotion } from '../../features/reduced-motion/useReducedMotion';
+import { useEnvironment } from '../../features/environment';
 import { Hero } from '../../sections/Hero/Hero';
 import { About } from '../../sections/About/About';
 import { Expertise } from '../../sections/Expertise/Expertise';
@@ -19,6 +20,7 @@ export function HorizontalJourney({ entered }: { entered: boolean }) {
   const [moving, setMoving] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const reduced = useReducedMotion();
+  const { setActiveSection } = useEnvironment();
   const viewport = useRef<HTMLElement>(null);
   const track = useRef<HTMLDivElement>(null);
   const mist = useRef<HTMLDivElement>(null);
@@ -152,6 +154,9 @@ export function HorizontalJourney({ entered }: { entered: boolean }) {
   }, [entered, reduced]);
 
   useEffect(() => { if (!entered) setMenuOpen(false); }, [entered]);
+  useEffect(() => {
+    setActiveSection(entered ? chapters[active].id : null);
+  }, [active, entered, setActiveSection]);
   const content: ReactNode[] = [
     <Hero entered={entered} chapterActive={active === 0} prepared={active <= 1} />,
     <About active={active === 1 && entered} />,

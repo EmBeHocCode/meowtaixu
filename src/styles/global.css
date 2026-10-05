@@ -23,6 +23,13 @@
   --leading-heading: 1.14;
   --leading-body: 1.75;
   --tracking-label: 0.18em;
+  --env-rain: 0;
+  --env-wind: 0.1;
+  --env-cloud: 0.22;
+  --env-fog: 0.2;
+  --env-daylight: 0.08;
+  --env-moonlight: 0.88;
+  --env-warmth: 0.16;
   font-family: var(--font-body);
   color: #eeeae1;
   background: #080d14;
@@ -39,6 +46,34 @@ a { color: inherit; text-underline-offset: 0.2em; }
 button { font: inherit; cursor: pointer; }
 :focus-visible { outline: 2px solid #eeeae1; outline-offset: 4px; }
 .app-shell { position: relative; isolation: isolate; }
+.global-weather {
+  position: fixed;
+  inset: -12%;
+  z-index: 29;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: calc(var(--env-rain) * 0.28);
+  background-image:
+    repeating-linear-gradient(112deg, transparent 0 22px, rgb(190 211 220 / 32%) 23px, transparent 24px 52px),
+    repeating-linear-gradient(112deg, transparent 0 41px, rgb(145 172 184 / 22%) 42px, transparent 43px 79px);
+  background-size: 190px 260px, 260px 340px;
+  animation: global-rain-fall 0.72s linear infinite;
+  transition: opacity 1.2s linear;
+}
+.global-weather[data-section='hero'], .global-weather[data-weather='calm'] { opacity: 0; }
+@keyframes global-rain-fall { to { background-position: 48px 260px, 62px 340px; } }
+.app-shell::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  background:
+    linear-gradient(rgb(125 153 171 / calc(var(--env-daylight) * 0.055)), rgb(9 16 28 / calc(var(--env-cloud) * 0.09))),
+    radial-gradient(circle at 72% 17%, rgb(191 207 210 / calc(var(--env-moonlight) * 0.045)), transparent 34%),
+    linear-gradient(110deg, rgb(194 146 91 / calc(var(--env-warmth) * 0.035)), transparent 55%);
+  transition: background 1.2s linear;
+}
 .app-content { position: relative; max-width: 72rem; margin-inline: auto; padding: 1.5rem; }
 nav ul { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; padding: 0; list-style: none; }
 section { padding-block: 2rem; scroll-margin-top: 1rem; }

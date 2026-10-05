@@ -215,11 +215,13 @@ test('Hero ambient motion uses compact layered assets and mobile-aware animation
   assert.match(world, /if \(!active \|\| !mesh\.current \|\| !material\.current\) return/);
   assert.match(world, /!mobile && <SpiritBirdFlights active=\{active\}/);
   assert.match(world, /!mobile && <AnimatedOverlay url=\{heroAssets\.bambooTips\}/);
-  assert.match(world, /mobile \? 0\.13 : 0\.23/);
+  assert.match(world, /environment\.values\.cloud/);
+  assert.match(world, /environment\.thunderPulse/);
   assert.match(world, /float edgeMask = featherX \* featherY/);
   assert.match(world, /texel\.a \* uOpacity \* edgeMask/);
   assert.match(world, /const frame = Math\.floor\(elapsed\.current/);
-  assert.match(world, /direction === 1 \? travelX : -travelX/);
+  assert.match(world, /sampleMovementPath\(path, progress, run\.current\)/);
+  assert.match(world, /movementOpacity\(path, progress\)/);
   assert.match(world, /mesh\.current\.scale\.x = direction/);
   assert.doesNotMatch(world, /kind === 'birds'/);
 });

@@ -18,7 +18,7 @@
   background-image: var(--expertise-background);
   background-position: center;
   background-size: cover;
-  filter: saturate(0.72) brightness(0.7);
+  filter: saturate(calc(0.65 + var(--env-warmth) * 0.12)) brightness(calc(0.64 + var(--env-daylight) * 0.12 - var(--env-cloud) * 0.06));
   transform: scale(1.02);
 }
 

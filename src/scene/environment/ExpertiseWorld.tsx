@@ -1,11 +1,12 @@
 import { Line, useTexture } from '@react-three/drei';
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { MathUtils, Mesh, MeshBasicMaterial, SRGBColorSpace } from 'three';
+import { MathUtils, Mesh, MeshBasicMaterial, ShaderMaterial, SRGBColorSpace } from 'three';
 import { expertiseDisciplines } from '../../data/expertise';
 import { heroAssets } from '../../data/hero-assets';
 import type { ExpertiseSceneProps } from '../../types/expertise';
 import { ExpertiseCameraRig } from '../camera/ExpertiseCameraRig';
+import { useEnvironment } from '../../features/environment';
 
 const DESKTOP = [
   { x: 0.08, y: 0.18, h: 0.43, z: -0.5, phase: 0.2 },
@@ -53,21 +54,45 @@ function Artifact({ index, active, mobile, selected }: ExpertiseSceneProps & { i
 }
 
 function GroundMist({ active, mobile }: Pick<ExpertiseSceneProps, 'active' | 'mobile'>) {
+  const environment = useEnvironment();
   const texture = useTexture(heroAssets.fog);
   texture.colorSpace = SRGBColorSpace;
   const mesh = useRef<Mesh>(null);
-  const material = useRef<MeshBasicMaterial>(null);
+  const material = useRef<ShaderMaterial>(null);
   const { viewport } = useThree();
   const time = useRef(0);
   useFrame((_state, delta) => {
     if (!mesh.current || !material.current) return;
     time.current += Math.min(delta, 0.08);
-    mesh.current.position.x = Math.sin(time.current * 0.08) * viewport.width * 0.05;
-    material.current.opacity = MathUtils.damp(material.current.opacity, active ? (mobile ? 0.1 : 0.16) : 0.05, 2.5, delta);
+    material.current.uniforms.uTime.value = time.current;
+    material.current.uniforms.uWind.value = environment.values.wind;
+    material.current.uniforms.uOpacity.value = MathUtils.damp(
+      material.current.uniforms.uOpacity.value,
+      active ? (mobile ? 0.08 : 0.12) + environment.values.fog * 0.12 : 0.04,
+      2.5,
+      delta,
+    );
   });
   return <mesh ref={mesh} position={[0, -viewport.height * 0.34, 1.3]} renderOrder={30}>
     <planeGeometry args={[viewport.width * 1.35, viewport.height * 0.5]} />
-    <meshBasicMaterial ref={material} map={texture} transparent depthWrite={false} toneMapped={false} opacity={0.08} color="#8a9ca6" />
+    <shaderMaterial ref={material} transparent depthWrite={false} toneMapped={false}
+      uniforms={{ uMap: { value: texture }, uTime: { value: 0 }, uWind: { value: 0.1 }, uOpacity: { value: 0.08 } }}
+      vertexShader={`varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`}
+      fragmentShader={`
+        varying vec2 vUv;
+        uniform sampler2D uMap;
+        uniform float uTime;
+        uniform float uWind;
+        uniform float uOpacity;
+        void main(){
+          vec2 uv=vUv;
+          uv.x += sin(uTime*(0.1+uWind*0.2)+vUv.y*5.0)*(.018+uWind*.018);
+          uv.y += sin(uTime*.07+vUv.x*3.6)*.006;
+          vec4 texel=texture2D(uMap,clamp(uv,0.0,1.0));
+          float feather=smoothstep(0.0,.18,vUv.x)*smoothstep(0.0,.18,1.0-vUv.x)*smoothstep(0.0,.12,vUv.y)*smoothstep(0.0,.12,1.0-vUv.y);
+          gl_FragColor=vec4(texel.rgb*.82,texel.a*uOpacity*feather);
+        }
+      `} />
   </mesh>;
 }
 
@@ -79,13 +104,14 @@ function EnergyThreads({ active, mobile }: Pick<ExpertiseSceneProps, 'active' | 
 }
 
 function FrameBudget({ active, mobile }: Pick<ExpertiseSceneProps, 'active' | 'mobile'>) {
+  const environment = useEnvironment();
   const invalidate = useThree((state) => state.invalidate);
   useEffect(() => {
     invalidate();
-    if (!active) return;
+    if (!active || environment.paused) return;
     const timer = window.setInterval(invalidate, 1000 / (mobile ? 18 : 28));
     return () => window.clearInterval(timer);
-  }, [active, mobile, invalidate]);
+  }, [active, mobile, invalidate, environment.paused]);
   return null;
 }
 
