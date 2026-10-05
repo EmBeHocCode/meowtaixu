@@ -58,19 +58,26 @@
 .expertise__chinese { position: absolute; top: 0.1rem; right: -2.7rem; color: rgb(203 181 133 / 26%); font-family: var(--font-chinese); font-size: clamp(2.5rem, 4vw, 4.7rem); letter-spacing: 0.1em; writing-mode: vertical-rl; }
 
 .expertise__paths { position: absolute; z-index: 3; inset: 0; pointer-events: none; }
-.expertise__path { position: absolute; min-height: 44px; padding: 0.35rem 0; border: 0; background: transparent; color: #c7ccd0; text-align: left; pointer-events: auto; text-shadow: 0 2px 7px #05090d; transition: opacity 300ms ease, color 300ms ease, transform 300ms ease; }
-.expertise__path::before { content: ''; position: absolute; top: 50%; right: calc(100% + 0.65rem); width: 1.7rem; height: 1px; background: linear-gradient(90deg, transparent, #a88953); opacity: 0.6; }
-.expertise__path > span { display: block; color: #aa936b; font-size: var(--type-micro); letter-spacing: 0.16em; }
+.expertise__path { position: absolute; min-height: 44px; padding: 0; border: 0; background: transparent; color: #c7ccd0; text-align: left; pointer-events: auto; text-shadow: 0 2px 7px #05090d; }
+.expertise__path-label { position: absolute; display: block; min-width: max-content; padding: 0.35rem 0; transition: color 300ms ease, transform 300ms ease; }
+.expertise__path-label::before { content: ''; position: absolute; top: 50%; right: calc(100% + 0.65rem); width: 1.7rem; height: 1px; background: linear-gradient(90deg, transparent, #a88953); opacity: 0.6; }
+.expertise__path-label > span { display: block; color: #aa936b; font-size: var(--type-micro); letter-spacing: 0.16em; }
 .expertise__path strong { display: block; margin: 0.1rem 0; font-family: var(--font-editorial); font-size: var(--type-heading-artifact); font-weight: 500; letter-spacing: 0.04em; }
 .expertise__path small { display: block; color: #98a4a8; font-size: var(--type-micro); letter-spacing: 0.08em; }
-.expertise__path:hover, .expertise__path:focus-visible, .expertise__path[aria-pressed='true'] { color: #f0d79e; transform: translateY(-2px); }
-.expertise__path:focus-visible { outline-color: #d8be87; }
-.expertise__path[data-id='commerce'] { left: 51%; top: 10%; }
-.expertise__path[data-id='web'] { left: 69%; top: 39%; }
-.expertise__path[data-id='ai'] { right: 4%; top: 12%; }
-.expertise__path[data-id='planning'] { right: 4%; bottom: 8%; }
+.expertise__path:hover .expertise__path-label, .expertise__path:focus-visible .expertise__path-label, .expertise__path[aria-pressed='true'] .expertise__path-label { color: #f0d79e; transform: translateY(-2px); }
+.expertise__path:focus-visible { outline: none; }
+.expertise__path:focus-visible .expertise__path-label { text-decoration: underline; text-decoration-color: #d8be87; text-underline-offset: 0.35rem; }
+/* Each transparent button covers its relic; labels remain attached to their original positions. */
+.expertise__path[data-id='commerce'] { left: 48%; top: 8%; width: 17%; height: 39%; }
+.expertise__path[data-id='commerce'] .expertise__path-label { left: 17%; top: 5%; }
+.expertise__path[data-id='web'] { left: 65%; top: 27%; width: 18%; height: 40%; }
+.expertise__path[data-id='web'] .expertise__path-label { left: 22%; top: 27%; }
+.expertise__path[data-id='ai'] { right: 1%; top: 8%; width: 16%; height: 31%; }
+.expertise__path[data-id='ai'] .expertise__path-label { right: 12%; top: 6%; }
+.expertise__path[data-id='planning'] { right: 2%; bottom: 5%; width: 23%; height: 27%; }
+.expertise__path[data-id='planning'] .expertise__path-label { right: 2%; bottom: 2%; }
 
-.expertise__annotation { position: absolute; z-index: 3; right: clamp(1.5rem, 5vw, 6rem); bottom: clamp(5.5rem, 11vh, 8rem); width: min(30vw, 27rem); padding-left: 1.2rem; border-left: 1px solid rgb(188 157 97 / 58%); pointer-events: none; text-shadow: 0 2px 8px rgb(0 0 0 / 75%); }
+.expertise__annotation { position: absolute; z-index: 3; left: 43%; bottom: clamp(4.7rem, 8vh, 6rem); width: min(26vw, 27rem); padding-left: 1.2rem; border-left: 1px solid rgb(188 157 97 / 58%); pointer-events: none; text-shadow: 0 2px 8px rgb(0 0 0 / 75%); }
 .expertise__annotation-index { color: #bca474; font-size: var(--type-micro); letter-spacing: 0.16em; }
 .expertise__annotation h3 { margin: 0.35rem 0 0.15rem; font-family: var(--font-editorial); font-size: var(--type-heading-artifact); font-weight: 500; color: #f1e8d7; }
 .expertise__annotation p { margin: 0; color: #ced3d2; font-size: var(--type-secondary); line-height: 1.65; }
@@ -79,8 +86,7 @@
 
 @media (max-width: 1024px) {
   .expertise__content { width: min(40vw, 31rem); left: 5%; }
-  .expertise__annotation { width: 34vw; right: 4%; }
-  .expertise__path[data-id='web'] { left: 65%; }
+  .expertise__annotation { left: 42%; width: 32vw; }
 }
 
 @media (max-width: 767px) {
@@ -99,8 +105,9 @@
   .expertise__static-artifacts img { display: none; }
   .expertise__static-artifacts img[data-selected='true'] { display: block; width: min(66vw, 310px); max-height: 38vh; left: 50%; top: 48%; right: auto; bottom: auto; transform: translate(-50%, -50%); object-fit: contain; }
   .expertise__paths { inset: auto 6% 9.1rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.25rem; }
-  .expertise__path { position: relative !important; inset: auto !important; min-width: 0; padding: 0.45rem 0.15rem; text-align: center; }
-  .expertise__path::before { top: auto; right: 10%; bottom: 0; left: 10%; width: auto; background: linear-gradient(90deg, transparent, #a88953, transparent); }
+  .expertise__path { position: relative !important; inset: auto !important; width: auto !important; height: auto !important; min-width: 0; padding: 0; text-align: center; }
+  .expertise__path-label { position: relative !important; inset: auto !important; min-width: 0; padding: 0.45rem 0.15rem; }
+  .expertise__path-label::before { top: auto; right: 10%; bottom: 0; left: 10%; width: auto; background: linear-gradient(90deg, transparent, #a88953, transparent); }
   .expertise__path strong { font-family: var(--font-body); font-size: 0.66rem; letter-spacing: 0.02em; }
   .expertise__path small { display: none; }
   .expertise__annotation { right: 7%; bottom: 3.2rem; left: 7%; width: auto; min-height: 4.6rem; padding-left: 0.8rem; }
@@ -118,5 +125,5 @@
 @media (prefers-reduced-motion: reduce) {
   .expertise__static-artifacts img,
   .expertise__path { transition: none; }
-  .expertise__path:hover, .expertise__path:focus-visible, .expertise__path[aria-pressed='true'] { transform: none; }
+  .expertise__path:hover .expertise__path-label, .expertise__path:focus-visible .expertise__path-label, .expertise__path[aria-pressed='true'] .expertise__path-label { transform: none; }
 }

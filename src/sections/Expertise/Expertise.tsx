@@ -72,9 +72,11 @@ export function Expertise({ active, prepared }: { active: boolean; prepared: boo
         onFocus={() => choose(index)}
         onClick={() => choose(index)}
       >
-        <span>{item.index}</span>
-        <strong>{item.title}</strong>
-        <small lang="en">{item.english}</small>
+        <span className="expertise__path-label">
+          <span>{item.index}</span>
+          <strong>{item.title}</strong>
+          <small lang="en">{item.english}</small>
+        </span>
       </button>)}
     </div>
 

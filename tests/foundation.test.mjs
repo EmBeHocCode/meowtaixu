@@ -105,9 +105,11 @@ test('Sở tu presents four accessible cultivation disciplines without a card gr
   for (const title of ['THƯƠNG ĐẠO', 'KIẾN WEB', 'TRỢ PHÁP AI', 'MƯU HOẠCH']) assert.ok(data.includes(title), title);
   for (const english of ['E-Commerce Mindset', 'Web Product Building', 'AI-assisted Workflow', 'Product Planning']) assert.ok(data.includes(english), english);
   assert.match(section, /aria-pressed=\{selected === index\}/);
+  assert.match(section, /className="expertise__path-label"/);
   assert.match(section, /data-journey-input/);
   assert.match(section, /data-chapter-scroll/);
   assert.doesNotMatch(css, /grid-template-columns:\s*repeat\(2/);
+  assert.match(css, /Each transparent button covers its relic/);
   assert.match(journey, /<Expertise active=\{active === 2 && entered\} prepared=/);
 });
 
