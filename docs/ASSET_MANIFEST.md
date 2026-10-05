@@ -42,6 +42,19 @@ Runtime Hero image budget: 637,348 bytes desktop, 579,220 bytes with the mobile 
 
 Full prompts and implementation detail: `HERO_IMPLEMENTATION.md`. Conversion helper: `scripts/prepare-hero-assets.mjs` (uses already-installed Sharp, resize/re-encode only).
 
+## Hero ambient motion assets added — 2026-10-06
+
+The original Hero painting and composition remain unchanged. Three small transparent derivatives add restrained environmental motion through the existing demand-rendered Three.js scene. Desktop loads all three; mobile loads only the sky pulse and existing single fog layer. Reduced-motion keeps the complete static Hero. The additional desktop runtime transfer is 96,164 bytes.
+
+| Exact project-relative path | Origin / bytes | Actual use |
+| --- | --- | --- |
+| `public/assets/xianxia/vfx/hero-sky-tribulation-glow.webp` | Local transparent derivative of the approved far Hero painting; 34,382 bytes | Localized upper-sky pulse at a deterministic 10.8-second interval; additive opacity remains restrained |
+| `public/assets/xianxia/environment/hero-bamboo-tips.webp` | Local transparent derivative of the approved near bamboo layer; 54,572 bytes | Desktop-only minute sway of bamboo tips without moving the foreground rocks |
+| `public/assets/xianxia/vfx/hero-distant-spirit-birds.png` | Built-in ImageGen transparent master; 100,034 bytes | Retained source for five sparse distant ink-wash bird silhouettes; not requested at runtime |
+| `public/assets/xianxia/vfx/hero-distant-spirit-birds.webp` | Optimized derivative of the ImageGen master; 7,210 bytes | Desktop-only tiny upper-right silhouettes with slow drift; deliberately kept away from the title and moon |
+
+Bird generation direction: five sparse, distant spirit-bird silhouettes in Chinese ink-wash style, midnight ink-blue, transparent background, with no scenery, text, logo or watermark. Exact readable labels remain HTML and no new particle system was introduced.
+
 ## About asset added — 2026-10-05
 
 One built-in ImageGen scroll supplies the personal dossier, while all readable text stays HTML. `public/assets/xianxia/props/about-scholar-scroll.png` is the 1024 × 1536 transparent master; `public/assets/xianxia/props/about-scholar-scroll.webp` is the 800 × 1200 runtime version (140,516 bytes). It is lazy-loaded. Alpha was verified; no CSS geometric scroll substitute is used. About reuses Hero mountains, the distant pavilion, bamboo/rocks and `vfx/fog-silk.webp`; no new environment, moon or particle asset was generated. Prompt and reproduction notes: [ABOUT_IMPLEMENTATION.md](ABOUT_IMPLEMENTATION.md).

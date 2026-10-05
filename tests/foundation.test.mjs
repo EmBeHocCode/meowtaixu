@@ -192,6 +192,33 @@ test('Hero web assets exist, use WebP and stay below a 700 KB desktop transfer b
   assert.ok(statSync(at('public/assets/xianxia/background/hero-mountains-mobile.webp')).size < 60000);
 });
 
+test('Hero ambient motion uses compact layered assets and mobile-aware animation branches', () => {
+  const runtimeAssets = [
+    'vfx/hero-sky-tribulation-glow.webp',
+    'environment/hero-bamboo-tips.webp',
+    'vfx/hero-distant-spirit-birds.webp',
+  ];
+  let bytes = 0;
+  for (const asset of runtimeAssets) {
+    const data = readFileSync(at(`public/assets/xianxia/${asset}`));
+    assert.equal(data.toString('ascii', 0, 4), 'RIFF');
+    assert.equal(data.toString('ascii', 8, 12), 'WEBP');
+    bytes += data.length;
+  }
+  assert.ok(bytes < 100000, `Hero ambient assets: ${bytes} bytes`);
+  const birdsMaster = readFileSync(at('public/assets/xianxia/vfx/hero-distant-spirit-birds.png'));
+  assert.equal(birdsMaster.toString('ascii', 1, 4), 'PNG');
+
+  const assets = readFileSync(at('src/data/hero-assets.ts'), 'utf8');
+  const world = readFileSync(at('src/scene/environment/HeroWorld.tsx'), 'utf8');
+  for (const name of ['skyPulse', 'bambooTips', 'distantBirds']) assert.ok(assets.includes(name), name);
+  assert.match(world, /if \(!active \|\| !mesh\.current \|\| !material\.current\) return/);
+  assert.match(world, /!mobile && <AnimatedOverlay url=\{heroAssets\.distantBirds\}/);
+  assert.match(world, /!mobile && <AnimatedOverlay url=\{heroAssets\.bambooTips\}/);
+  assert.match(world, /mobile \? 0\.08 : 0\.14/);
+  assert.match(world, /fog === 1 \? 0\.055 : 0\.038/);
+});
+
 test('brand logo derivatives and browser icons have expected PNG dimensions', () => {
   const expected = {
     'logo-header.png': [600, 200],

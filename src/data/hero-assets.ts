@@ -7,4 +7,7 @@ export const heroAssets = {
   near: asset('environment/mountain-near-bamboo.webp'),
   moon: asset('environment/moon-ink-silver.webp'),
   fog: asset('vfx/fog-silk.webp'),
+  skyPulse: asset('vfx/hero-sky-tribulation-glow.webp'),
+  bambooTips: asset('environment/hero-bamboo-tips.webp'),
+  distantBirds: asset('vfx/hero-distant-spirit-birds.webp'),
 } as const;
