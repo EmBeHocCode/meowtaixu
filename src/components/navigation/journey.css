@@ -25,7 +25,33 @@ html:has(.journey), body:has(.journey) { overflow: hidden; overscroll-behavior: 
 .journey__footer span { font-family: var(--font-body); font-size: var(--type-label); letter-spacing: 0.05em; }
 .journey__footer button { width: 44px; height: 44px; border: 0; background: transparent; color: #d4bf99; font-size: 1.3rem; }
 .journey__footer button:disabled { opacity: 0.3; cursor: default; }
-.journey__mist { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; opacity: 0; z-index: 5; }
+.journey__mist {
+  position: absolute;
+  top: -10%;
+  bottom: -10%;
+  left: -35vw;
+  width: 70vw;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 5;
+  overflow: hidden;
+  background: rgb(5 12 19 / 46%);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  -webkit-mask-image: radial-gradient(ellipse 50% 76% at center, #000 28%, rgb(0 0 0 / 90%) 52%, transparent 100%);
+  mask-image: radial-gradient(ellipse 50% 76% at center, #000 28%, rgb(0 0 0 / 90%) 52%, transparent 100%);
+  will-change: transform, opacity;
+}
+.journey__mist img {
+  position: absolute;
+  inset: -4% -25%;
+  width: 150%;
+  height: 108%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0.86;
+  filter: saturate(0.68) brightness(0.86) blur(4px);
+}
 .journey .hero { min-height: 0; height: 100%; }
 .journey .hero__header, .journey .hero__scroll { display: none; }
 .journey .hero__art { mask-image: none; }
@@ -63,6 +89,8 @@ html:has(.journey), body:has(.journey) { overflow: hidden; overscroll-behavior: 
   .journey .about__layout { gap: 2rem; grid-template-columns: minmax(0, 1fr) minmax(300px, 0.9fr); }
 }
 @media (max-width: 767px) {
+  .journey__mist { left: -43vw; width: 86vw; -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+  .journey__mist img { filter: saturate(0.68) brightness(0.86) blur(3px); }
   .journey__brand { width: 42px; height: 42px; }
   .journey__brand img { width: 38px; height: 38px; }
   .journey__menu-toggle { display: block; border: 0; background: #080f18; color: #d9c9ab; font-family: var(--font-body); font-size: var(--type-nav); padding: 0.65rem; min-height: 44px; }

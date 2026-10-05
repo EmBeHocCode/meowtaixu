@@ -21,7 +21,7 @@ export function HorizontalJourney({ entered }: { entered: boolean }) {
   const reduced = useReducedMotion();
   const viewport = useRef<HTMLElement>(null);
   const track = useRef<HTMLDivElement>(null);
-  const mist = useRef<HTMLImageElement>(null);
+  const mist = useRef<HTMLDivElement>(null);
   const index = useRef(active);
   const navigate = useRef<(next: number, history?: boolean) => void>(() => {});
 
@@ -31,12 +31,17 @@ export function HorizontalJourney({ entered }: { entered: boolean }) {
     let locked = false;
     let tween: gsap.core.Timeline | undefined;
     const place = () => gsap.set(rail, { x: -index.current * host.clientWidth, opacity: 1 });
-    const finish = () => { locked = false; setMoving(false); gsap.set(mist.current, { opacity: 0 }); };
+    const finish = () => {
+      locked = false;
+      setMoving(false);
+      gsap.set(mist.current, { opacity: 0, x: 0, xPercent: 0, yPercent: 0 });
+    };
     place();
     const go = (next: number, writeHistory = true) => {
       next = Math.min(chapters.length - 1, Math.max(0, next));
       setMenuOpen(false);
       if (next === index.current) return;
+      const direction = next > index.current ? 1 : -1;
       tween?.kill();
       if (rail.contains(document.activeElement)) host.focus({ preventScroll: true });
       index.current = next;
@@ -52,9 +57,15 @@ export function HorizontalJourney({ entered }: { entered: boolean }) {
         tween.to(rail, { opacity: 0, duration: 0.08 }).set(rail, { x })
           .to(rail, { opacity: 1, duration: 0.12 });
       } else {
-        tween.to(rail, { x, duration: 1, ease: 'power2.inOut' }, 0)
-          .fromTo(mist.current, { opacity: 0, xPercent: 12 }, { opacity: 0.34, xPercent: 0, duration: 0.45, ease: 'sine.out' }, 0)
-          .to(mist.current, { opacity: 0, xPercent: -12, duration: 0.55 }, 0.45);
+        tween.to(rail, { x, duration: 1.15, ease: 'power3.inOut', force3D: true }, 0)
+          .fromTo(mist.current,
+            { x: direction > 0 ? host.clientWidth : 0, yPercent: 0.8 },
+            { x: direction > 0 ? 0 : host.clientWidth, yPercent: -0.6, duration: 1.15, ease: 'power3.inOut' }, 0)
+          .fromTo(mist.current,
+            { opacity: 0 },
+            { opacity: 0.68, duration: 0.5, ease: 'sine.inOut' }, 0)
+          .to(mist.current,
+            { opacity: 0, duration: 0.65, ease: 'sine.inOut' }, 0.5);
       }
     };
     navigate.current = go;
@@ -142,8 +153,8 @@ export function HorizontalJourney({ entered }: { entered: boolean }) {
 
   useEffect(() => { if (!entered) setMenuOpen(false); }, [entered]);
   const content: ReactNode[] = [
-    <Hero entered={entered} chapterActive={active === 0 && !moving} prepared={active <= 1} />,
-    <About active={active === 1 && entered && !moving} />,
+    <Hero entered={entered} chapterActive={active === 0} prepared={active <= 1} />,
+    <About active={active === 1 && entered} />,
     <Expertise />, <Skills />, <Focus />, <Projects />, <Connect />,
   ];
   return <div className="journey" data-active-chapter={chapters[active].id} data-moving={moving} data-reduced-motion={reduced}>
@@ -162,7 +173,9 @@ export function HorizontalJourney({ entered }: { entered: boolean }) {
           {content[i]}
         </div>)}
       </div>
-      <img ref={mist} className="journey__mist protected-artwork" draggable="false" src={heroAssets.fog} alt="" aria-hidden="true" />
+      <div ref={mist} className="journey__mist protected-artwork" aria-hidden="true">
+        <img draggable="false" src={heroAssets.fog} alt="" />
+      </div>
     </main>
     <footer className="journey__footer" inert={!entered}>
       <button onClick={() => navigate.current(active - 1)} disabled={active === 0 || moving} aria-label="Chương trước">←</button>
