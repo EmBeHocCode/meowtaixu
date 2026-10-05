@@ -9,5 +9,5 @@ export const heroAssets = {
   fog: asset('vfx/fog-silk.webp'),
   skyPulse: asset('vfx/hero-sky-tribulation-glow.webp'),
   bambooTips: asset('environment/hero-bamboo-tips.webp'),
-  distantBirds: asset('vfx/hero-distant-spirit-birds.webp'),
+  birdFlightSprite: asset('vfx/hero-spirit-bird-flight-spritesheet.webp'),
 } as const;

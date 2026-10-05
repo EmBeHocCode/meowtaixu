@@ -44,16 +44,18 @@ Full prompts and implementation detail: `HERO_IMPLEMENTATION.md`. Conversion hel
 
 ## Hero ambient motion assets added — 2026-10-06
 
-The original Hero painting and composition remain unchanged. Three small transparent derivatives add restrained environmental motion through the existing demand-rendered Three.js scene. Desktop loads all three; mobile loads only the sky pulse and existing single fog layer. Reduced-motion keeps the complete static Hero. The additional desktop runtime transfer is 96,164 bytes.
+The original Hero painting and composition remain unchanged. Small transparent derivatives add restrained environmental motion through the existing demand-rendered Three.js scene. Desktop loads the sky, bamboo and bird sprite assets; mobile loads only the sky pulse and existing single fog layer. Reduced-motion keeps the complete static Hero. Birds now use real frame progression and directional flight instead of translating one still image back and forth.
 
 | Exact project-relative path | Origin / bytes | Actual use |
 | --- | --- | --- |
 | `public/assets/xianxia/vfx/hero-sky-tribulation-glow.webp` | Local transparent derivative of the approved far Hero painting; 34,382 bytes | Localized upper-sky pulse at a deterministic 7.2-second interval; additive opacity remains restrained but visibly readable |
 | `public/assets/xianxia/environment/hero-bamboo-tips.webp` | Local transparent derivative of the approved near bamboo layer; 54,572 bytes | Desktop-only minute sway of bamboo tips without moving the foreground rocks |
-| `public/assets/xianxia/vfx/hero-distant-spirit-birds.png` | Built-in ImageGen transparent master; 100,034 bytes | Retained source for five sparse distant ink-wash bird silhouettes; not requested at runtime |
-| `public/assets/xianxia/vfx/hero-distant-spirit-birds.webp` | Optimized derivative of the ImageGen master; 7,210 bytes | Desktop-only tiny upper-right silhouettes with slow drift; deliberately kept away from the title and moon |
+| `public/assets/xianxia/vfx/hero-distant-spirit-birds.png` | Earlier built-in ImageGen transparent master; 100,034 bytes | Retired source retained for provenance; no longer requested at runtime because it cannot supply true wing motion |
+| `public/assets/xianxia/vfx/hero-distant-spirit-birds.webp` | Earlier optimized still derivative; 7,210 bytes | Retired runtime asset retained for provenance; no longer referenced by the Hero |
+| `public/assets/xianxia/vfx/hero-spirit-bird-flight-spritesheet.png` | Built-in ImageGen transparent 4 × 2 master; 462,773 bytes | Retained eight-frame source for a right-facing xianxia spirit bird wing cycle |
+| `public/assets/xianxia/vfx/hero-spirit-bird-flight-spritesheet.webp` | 1024 × 512 optimized runtime sprite; 67,644 bytes | Eight-frame loop shared by three desktop birds; two fly right and one uses the correctly mirrored left-facing state while travelling left |
 
-Bird generation direction: five sparse, distant spirit-bird silhouettes in Chinese ink-wash style, midnight ink-blue, transparent background, with no scenery, text, logo or watermark. Exact readable labels remain HTML and no new particle system was introduced.
+Current bird generation direction: exactly eight sequential frames of one consistent right-facing crane-like spirit bird, smooth raised/down/lowered/up wing cycle, Chinese ink-wash midnight blue, transparent 4 × 2 sheet, stable scale and anchor, with no scenery, grid, text, logo or watermark. Runtime UV frame stepping loops continuously; flight position progresses in one dominant direction and wraps only after leaving the viewport. Leftward birds mirror both orientation and path direction. Fog uses continuous UV drift rather than a reversing sine shuttle. Bamboo uses segmented vertex deformation anchored toward the lower portion of its plane, not whole-cutout translation.
 
 ## About asset added — 2026-10-05
 

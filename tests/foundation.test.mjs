@@ -196,7 +196,7 @@ test('Hero ambient motion uses compact layered assets and mobile-aware animation
   const runtimeAssets = [
     'vfx/hero-sky-tribulation-glow.webp',
     'environment/hero-bamboo-tips.webp',
-    'vfx/hero-distant-spirit-birds.webp',
+    'vfx/hero-spirit-bird-flight-spritesheet.webp',
   ];
   let bytes = 0;
   for (const asset of runtimeAssets) {
@@ -205,18 +205,22 @@ test('Hero ambient motion uses compact layered assets and mobile-aware animation
     assert.equal(data.toString('ascii', 8, 12), 'WEBP');
     bytes += data.length;
   }
-  assert.ok(bytes < 100000, `Hero ambient assets: ${bytes} bytes`);
-  const birdsMaster = readFileSync(at('public/assets/xianxia/vfx/hero-distant-spirit-birds.png'));
-  assert.equal(birdsMaster.toString('ascii', 1, 4), 'PNG');
+  assert.ok(bytes < 170000, `Hero ambient assets: ${bytes} bytes`);
+  const spriteMaster = readFileSync(at('public/assets/xianxia/vfx/hero-spirit-bird-flight-spritesheet.png'));
+  assert.equal(spriteMaster.toString('ascii', 1, 4), 'PNG');
 
   const assets = readFileSync(at('src/data/hero-assets.ts'), 'utf8');
   const world = readFileSync(at('src/scene/environment/HeroWorld.tsx'), 'utf8');
-  for (const name of ['skyPulse', 'bambooTips', 'distantBirds']) assert.ok(assets.includes(name), name);
+  for (const name of ['skyPulse', 'bambooTips', 'birdFlightSprite']) assert.ok(assets.includes(name), name);
   assert.match(world, /if \(!active \|\| !mesh\.current \|\| !material\.current\) return/);
-  assert.match(world, /!mobile && <AnimatedOverlay url=\{heroAssets\.distantBirds\}/);
+  assert.match(world, /!mobile && <SpiritBirdFlights active=\{active\}/);
   assert.match(world, /!mobile && <AnimatedOverlay url=\{heroAssets\.bambooTips\}/);
   assert.match(world, /mobile \? 0\.13 : 0\.23/);
-  assert.match(world, /fog === 1 \? 0\.11 : 0\.075/);
+  assert.match(world, /texture\.offset\.x = \(time\.current \* drift\) % 1/);
+  assert.match(world, /const frame = Math\.floor\(elapsed\.current/);
+  assert.match(world, /direction === 1 \? travelX : -travelX/);
+  assert.match(world, /mesh\.current\.scale\.x = direction/);
+  assert.doesNotMatch(world, /kind === 'birds'/);
 });
 
 test('brand logo derivatives and browser icons have expected PNG dimensions', () => {
