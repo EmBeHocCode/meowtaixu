@@ -5,8 +5,8 @@ html:has(.journey), body:has(.journey) { overflow: hidden; overscroll-behavior: 
 .journey__track { width: 100%; height: 100%; display: flex; will-change: transform; }
 .journey__chapter { flex: 0 0 100%; min-width: 0; height: 100%; position: relative; overflow: hidden; }
 .journey__chapter > section { width: 100%; height: 100%; margin: 0; }
-.journey__chapter:not(.journey__chapter--hero):not(.journey__chapter--about) > section { display: grid; align-content: center; padding: 8%; background: #080f18; }
-.journey__chapter:not(.journey__chapter--hero):not(.journey__chapter--about) h2 { font-weight: 400; font-size: 2rem; color: #c5c9ca; }
+.journey__chapter:not(.journey__chapter--hero):not(.journey__chapter--about):not(.journey__chapter--expertise) > section { display: grid; align-content: center; padding: 8%; background: #080f18; }
+.journey__chapter:not(.journey__chapter--hero):not(.journey__chapter--about):not(.journey__chapter--expertise) h2 { font-weight: 400; font-size: 2rem; color: #c5c9ca; }
 .journey-placeholder__label { margin: 0 0 1.25rem; color: #b8a781; font-size: var(--type-label); font-weight: 500; letter-spacing: var(--tracking-label); }
 .journey-placeholder h2 { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.35em; max-width: 18ch; font-family: var(--font-display); font-size: var(--type-display-section) !important; line-height: var(--leading-heading); color: #e8e4d9 !important; }
 .journey-placeholder h2 > span[lang='en'] { text-transform: uppercase; }

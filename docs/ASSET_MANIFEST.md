@@ -54,6 +54,25 @@ Built-in ImageGen generated one transparent 3:1 title treatment with the exact V
 
 Final ImageGen prompt: transparent premium xianxia key-art wordmark using only the exact Vietnamese text `Nhập thế hành đạo`; wide 3:1–4:1 composition; ivory, parchment white, pale antique gold, moonlit silver and misty blue-grey; refined brush-calligraphy and classical serif fusion; no swords, dragons, characters, extra symbols, frame or watermark.
 
+## Sở tu assets added — 2026-10-06
+
+Built-in ImageGen produced one environment and four isolated relics for the `03 — SỞ TU` cultivation scripture hall. Critical labels and descriptions remain semantic HTML. PNG masters are retained for future art work; optimized WebP derivatives are the only runtime requests. The runtime set totals 927,208 bytes.
+
+| Exact project-relative path | Origin / dimensions | Actual use |
+| --- | --- | --- |
+| `public/assets/xianxia/expertise/scripture-hall-midnight.png` | Built-in ImageGen master; 1672 × 941, opaque | Retained master for the distinct mountain scripture hall environment |
+| `public/assets/xianxia/expertise/scripture-hall-midnight.webp` | Optimized runtime; 205,542 bytes | Full-bleed hall background and no-WebGL fallback |
+| `public/assets/xianxia/expertise/merchant-scripture.png` | Built-in ImageGen master; 1024 × 1536, alpha | Retained source for Thương đạo |
+| `public/assets/xianxia/expertise/merchant-scripture.webp` | 700 × 1050; 193,248 bytes, alpha | Layered Thương đạo hanging scripture |
+| `public/assets/xianxia/expertise/web-construction-tablet.png` | Built-in ImageGen master; 1024 × 1536, alpha | Retained source for Kiến web |
+| `public/assets/xianxia/expertise/web-construction-tablet.webp` | 700 × 1050; 150,940 bytes, alpha | Focal jade/bronze construction tablet |
+| `public/assets/xianxia/expertise/ai-jade-talisman.png` | Built-in ImageGen master; 1312 × 1199, alpha | Retained source for Trợ pháp AI |
+| `public/assets/xianxia/expertise/ai-jade-talisman.webp` | 820 × 749; 199,790 bytes, alpha | Supporting jade talisman instrument; AI is framed as a tool, not the decision maker |
+| `public/assets/xianxia/expertise/product-strategy-scroll.png` | Built-in ImageGen master; 1774 × 887, alpha | Retained source for Mưu hoạch |
+| `public/assets/xianxia/expertise/product-strategy-scroll.webp` | 1200 × 600; 177,688 bytes, alpha | Near-depth strategic planning map |
+
+Generation prompts used the `stylized-concept` website-asset recipe: midnight blue/ink-black scripture hall, mist-grey cliffs, restrained antique gold and jade, realistic fantasy fused with Chinese ink wash, no characters, no readable text, no UI, no logos or watermark. Each relic was generated separately with genuine transparency, then alpha-checked after WebP conversion. Existing `public/assets/xianxia/vfx/fog-silk.webp` is reused in Three.js for low ground mist; no redundant fog texture was generated.
+
 ## Missing / not yet selected
 
 These are potential future needs, not authorization to generate them all.

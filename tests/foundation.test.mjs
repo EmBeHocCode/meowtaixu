@@ -91,9 +91,40 @@ test('unfinished journey chapters share a bilingual coming-soon state', () => {
   const placeholder = readFileSync(at('src/components/common/ComingSoonChapter.tsx'), 'utf8');
   assert.ok(placeholder.includes('Coming soon'));
   assert.ok(placeholder.includes('即将推出'));
-  for (const name of ['Expertise', 'Skills', 'Focus', 'Projects', 'Connect']) {
+  for (const name of ['Skills', 'Focus', 'Projects', 'Connect']) {
     assert.ok(readFileSync(at(`src/sections/${name}/${name}.tsx`), 'utf8').includes('ComingSoonChapter'));
   }
+});
+
+test('Sở tu presents four accessible cultivation disciplines without a card grid', () => {
+  const section = readFileSync(at('src/sections/Expertise/Expertise.tsx'), 'utf8');
+  const data = readFileSync(at('src/data/expertise.ts'), 'utf8');
+  const css = readFileSync(at('src/sections/Expertise/expertise.css'), 'utf8');
+  const journey = readFileSync(at('src/components/navigation/HorizontalJourney.tsx'), 'utf8');
+  assert.doesNotMatch(section, /ComingSoonChapter/);
+  for (const title of ['THƯƠNG ĐẠO', 'KIẾN WEB', 'TRỢ PHÁP AI', 'MƯU HOẠCH']) assert.ok(data.includes(title), title);
+  for (const english of ['E-Commerce Mindset', 'Web Product Building', 'AI-assisted Workflow', 'Product Planning']) assert.ok(data.includes(english), english);
+  assert.match(section, /aria-pressed=\{selected === index\}/);
+  assert.match(section, /data-journey-input/);
+  assert.match(section, /data-chapter-scroll/);
+  assert.doesNotMatch(css, /grid-template-columns:\s*repeat\(2/);
+  assert.match(journey, /<Expertise active=\{active === 2 && entered\} prepared=/);
+});
+
+test('Sở tu runtime artwork is optimized WebP with transparent relics', () => {
+  const names = ['scripture-hall-midnight', 'merchant-scripture', 'web-construction-tablet', 'ai-jade-talisman', 'product-strategy-scroll'];
+  let bytes = 0;
+  for (const name of names) {
+    const data = readFileSync(at(`public/assets/xianxia/expertise/${name}.webp`));
+    assert.equal(data.toString('ascii', 0, 4), 'RIFF');
+    assert.equal(data.toString('ascii', 8, 12), 'WEBP');
+    bytes += data.length;
+  }
+  assert.ok(bytes < 1000000, `Sở tu assets: ${bytes} bytes`);
+  const world = readFileSync(at('src/scene/environment/ExpertiseWorld.tsx'), 'utf8');
+  assert.match(world, /GroundMist/);
+  assert.match(world, /EnergyThreads/);
+  assert.match(world, /FrameBudget/);
 });
 
 test('all requested architecture directories exist', () => {

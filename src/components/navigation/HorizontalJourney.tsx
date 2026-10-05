@@ -155,7 +155,7 @@ export function HorizontalJourney({ entered }: { entered: boolean }) {
   const content: ReactNode[] = [
     <Hero entered={entered} chapterActive={active === 0} prepared={active <= 1} />,
     <About active={active === 1 && entered} />,
-    <Expertise />, <Skills />, <Focus />, <Projects />, <Connect />,
+    <Expertise active={active === 2 && entered} prepared={entered && Math.abs(active - 2) <= 1} />, <Skills />, <Focus />, <Projects />, <Connect />,
   ];
   return <div className="journey" data-active-chapter={chapters[active].id} data-moving={moving} data-reduced-motion={reduced}>
     <header className="journey__header" inert={!entered}>
