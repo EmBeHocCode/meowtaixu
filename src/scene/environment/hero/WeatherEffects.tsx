@@ -11,7 +11,7 @@ function seeded(index: number, salt: number) {
 export function RainSystem({ active, mobile }: { active: boolean; mobile: boolean }) {
   const { values } = useEnvironment();
   const geometry = useMemo(() => {
-    const count = mobile ? 150 : 420;
+    const count = mobile ? 170 : 520;
     const positions = new Float32Array(count * 6);
     const seeds = new Float32Array(count * 3);
     for (let i = 0; i < count; i += 1) {
@@ -42,9 +42,9 @@ export function RainSystem({ active, mobile }: { active: boolean; mobile: boolea
     const wind = values.wind;
     const width = viewport.width * 1.22;
     const height = viewport.height * 1.18;
-    const fallSpeed = 0.22 + rain * 0.68;
+    const fallSpeed = 0.34 + rain * 1.05;
     const slant = 0.035 + wind * 0.16;
-    const streak = 0.035 + rain * 0.11;
+    const streak = 0.018 + rain * 0.045;
     for (let i = 0; i < positions.count / 2; i += 1) {
       const seedX = seeds[i * 3];
       const seedY = seeds[i * 3 + 1];
@@ -57,7 +57,7 @@ export function RainSystem({ active, mobile }: { active: boolean; mobile: boolea
       positions.setXYZ(index + 1, x - streak * (0.25 + wind), y + streak, 3.4);
     }
     positions.needsUpdate = true;
-    material.opacity = Math.max(0, rain - 0.035) * (mobile ? 0.34 : 0.48);
+    material.opacity = Math.max(0, rain - 0.025) * (mobile ? 0.42 : 0.58);
   });
 
   return <lineSegments geometry={geometry} material={material} frustumCulled={false} renderOrder={18} />;
