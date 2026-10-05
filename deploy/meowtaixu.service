@@ -1,0 +1,21 @@
+[Unit]
+Description=Meow Taixu isolated portfolio on port 8082
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+ExecStartPre=/usr/sbin/nginx -t -p /srv/meowtaixu/ -c /srv/meowtaixu/current/deploy/nginx.conf
+ExecStart=/usr/sbin/nginx -p /srv/meowtaixu/ -c /srv/meowtaixu/current/deploy/nginx.conf -g "daemon off;"
+KillSignal=SIGQUIT
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/srv/meowtaixu/run /srv/meowtaixu/logs
+
+[Install]
+WantedBy=multi-user.target

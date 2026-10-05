@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.npm-cache/
+.env
+.env.*
+!.env.example
+*.local
+*.tsbuildinfo
+test-results/
+.deploy-artifacts/

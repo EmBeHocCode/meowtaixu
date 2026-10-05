@@ -1,0 +1,13 @@
+# Isolated server deployment
+
+- Repository: https://github.com/EmBeHocCode/meowtaixu.git
+- SSH alias: meow-aws; use the existing local key. Never commit credentials.
+- Application: /srv/meowtaixu, service meowtaixu.service, dedicated TCP port 8082.
+- Versioned releases: /srv/meowtaixu/releases/<commit>; current points to the active release.
+- Each release contains tracked source and locally verified production dist output. Only dist is publicly served; source, tests and deployment configuration are outside the document root.
+
+Build with `npm ci`, `npm test`, `npm run build` using Node >=22.12.0. Upload source archive and dist to a new versioned release. Test its Nginx configuration, switch current, then restart only meowtaixu.service. Retain previous releases for rollback. Do not change the existing system Nginx configuration or restart other websites.
+
+The dedicated Nginx process uses the already installed binary as ubuntu, writes only its own run/log directories, and serves static files including video range requests. It is not Vite's development server. No backend dependencies are installed on the server.
+
+Public address: http://3.25.155.199:8082/ . This is HTTP, not HTTPS. AWS inbound rules must allow TCP 8082 for external access; local service health alone does not prove that the AWS firewall allows it. TLS/domain configuration is not part of this deployment.
