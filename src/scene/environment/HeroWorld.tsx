@@ -39,10 +39,10 @@ function LandscapeLayer({ url, z, motion, opacity = 1, color = '#ffffff', fog = 
     if (!fog || !mesh.current || !material.current) return;
     time.current += Math.min(delta, 0.08);
     if (fog) {
-      const depthSpeed = fog === 1 ? 0.055 : 0.038;
+      const depthSpeed = fog === 1 ? 0.11 : 0.075;
       const direction = fog === 1 ? 1 : -1;
-      mesh.current.position.x = x + Math.sin(time.current * depthSpeed + fog) * width * (fog === 1 ? 0.021 : 0.014) * direction;
-      mesh.current.position.y = -height * 0.14 + Math.sin(time.current * (depthSpeed * 0.58) + fog) * height * 0.007;
+      mesh.current.position.x = x + Math.sin(time.current * depthSpeed + fog) * width * (fog === 1 ? 0.034 : 0.023) * direction;
+      mesh.current.position.y = -height * 0.14 + Math.sin(time.current * (depthSpeed * 0.58) + fog) * height * 0.011;
       material.current.opacity = opacity + motion.current.scroll * 0.07;
     }
   });
@@ -70,32 +70,33 @@ function AnimatedOverlay({ url, z, kind, active, mobile }: {
   const height = 2 * Math.tan(35 * Math.PI / 360) * (12 - z);
   const width = height * size.width / size.height;
   const aspect = (texture.image as { width: number; height: number }).width / (texture.image as { height: number }).height;
-  const planeHeight = kind === 'birds' ? width * 0.2 / aspect : Math.max(height, width / aspect) * 1.055;
-  const planeWidth = kind === 'birds' ? width * 0.2 : planeHeight * aspect;
-  const baseX = kind === 'birds' ? width * 0.18 : 0;
-  const baseY = kind === 'birds' ? height * 0.18 : 0;
+  const planeHeight = kind === 'birds' ? width * 0.27 / aspect : Math.max(height, width / aspect) * 1.055;
+  const planeWidth = kind === 'birds' ? width * 0.27 : planeHeight * aspect;
+  const baseX = kind === 'birds' ? width * 0.1 : 0;
+  const baseY = kind === 'birds' ? height * 0.25 : 0;
 
   useFrame((_state, delta) => {
     if (!active || !mesh.current || !material.current) return;
     time.current += Math.min(delta, 0.08);
     if (kind === 'sky') {
-      // A deterministic 10.8 s interval: one distant pulse and a softer afterglow.
-      const phase = time.current % 10.8;
-      const pulse = Math.exp(-Math.pow((phase - 8.8) / 0.58, 2));
-      const afterglow = Math.exp(-Math.pow((phase - 9.7) / 0.42, 2)) * 0.32;
-      material.current.opacity = Math.min(mobile ? 0.08 : 0.14, (pulse + afterglow) * (mobile ? 0.08 : 0.14));
+      // Reveal the first distant pulse quickly, then repeat on a calm 7.2 s cadence.
+      const phase = time.current % 7.2;
+      const pulse = Math.exp(-Math.pow((phase - 1.45) / 0.54, 2));
+      const afterglow = Math.exp(-Math.pow((phase - 2.25) / 0.42, 2)) * 0.42;
+      material.current.opacity = Math.min(mobile ? 0.13 : 0.23, (pulse + afterglow) * (mobile ? 0.13 : 0.23));
     } else if (kind === 'vegetation') {
-      mesh.current.rotation.z = Math.sin(time.current * 0.24) * 0.0023 + Math.sin(time.current * 0.11) * 0.0011;
-      mesh.current.position.x = baseX + Math.sin(time.current * 0.17) * width * 0.0016;
-      mesh.current.position.y = baseY + Math.sin(time.current * 0.13) * height * 0.0008;
+      mesh.current.rotation.z = Math.sin(time.current * 0.31) * 0.0055 + Math.sin(time.current * 0.14) * 0.002;
+      mesh.current.position.x = baseX + Math.sin(time.current * 0.21) * width * 0.0032;
+      mesh.current.position.y = baseY + Math.sin(time.current * 0.16) * height * 0.0014;
     } else {
-      mesh.current.position.x = baseX + Math.sin(time.current * 0.075) * width * 0.025;
-      mesh.current.position.y = baseY + Math.sin(time.current * 0.12) * height * 0.008;
-      mesh.current.rotation.z = Math.sin(time.current * 0.09) * 0.018;
+      mesh.current.position.x = baseX + Math.sin(time.current * 0.19) * width * 0.075;
+      mesh.current.position.y = baseY + Math.sin(time.current * 0.27) * height * 0.016;
+      mesh.current.rotation.z = Math.sin(time.current * 0.16) * 0.026;
+      material.current.opacity = 0.64 + Math.sin(time.current * 0.34) * 0.1;
     }
   });
 
-  return <mesh ref={mesh} position={[baseX, baseY, z]} renderOrder={kind === 'sky' ? 5 : kind === 'birds' ? 8 : 13}>
+  return <mesh ref={mesh} position={[baseX, baseY, z]} renderOrder={kind === 'sky' ? 5 : kind === 'birds' ? 10.5 : 13}>
     <planeGeometry args={[planeWidth, planeHeight]} />
     <meshBasicMaterial
       ref={material}
@@ -103,8 +104,8 @@ function AnimatedOverlay({ url, z, kind, active, mobile }: {
       transparent
       depthWrite={false}
       toneMapped={false}
-      opacity={kind === 'sky' ? 0 : kind === 'birds' ? 0.2 : 0.72}
-      blending={kind === 'sky' ? AdditiveBlending : undefined}
+      opacity={kind === 'sky' ? 0 : kind === 'birds' ? 0.64 : 0.78}
+      blending={kind === 'sky' || kind === 'birds' ? AdditiveBlending : undefined}
     />
   </mesh>;
 }

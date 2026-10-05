@@ -215,8 +215,8 @@ test('Hero ambient motion uses compact layered assets and mobile-aware animation
   assert.match(world, /if \(!active \|\| !mesh\.current \|\| !material\.current\) return/);
   assert.match(world, /!mobile && <AnimatedOverlay url=\{heroAssets\.distantBirds\}/);
   assert.match(world, /!mobile && <AnimatedOverlay url=\{heroAssets\.bambooTips\}/);
-  assert.match(world, /mobile \? 0\.08 : 0\.14/);
-  assert.match(world, /fog === 1 \? 0\.055 : 0\.038/);
+  assert.match(world, /mobile \? 0\.13 : 0\.23/);
+  assert.match(world, /fog === 1 \? 0\.11 : 0\.075/);
 });
 
 test('brand logo derivatives and browser icons have expected PNG dimensions', () => {

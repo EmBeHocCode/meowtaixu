@@ -48,7 +48,7 @@ The original Hero painting and composition remain unchanged. Three small transpa
 
 | Exact project-relative path | Origin / bytes | Actual use |
 | --- | --- | --- |
-| `public/assets/xianxia/vfx/hero-sky-tribulation-glow.webp` | Local transparent derivative of the approved far Hero painting; 34,382 bytes | Localized upper-sky pulse at a deterministic 10.8-second interval; additive opacity remains restrained |
+| `public/assets/xianxia/vfx/hero-sky-tribulation-glow.webp` | Local transparent derivative of the approved far Hero painting; 34,382 bytes | Localized upper-sky pulse at a deterministic 7.2-second interval; additive opacity remains restrained but visibly readable |
 | `public/assets/xianxia/environment/hero-bamboo-tips.webp` | Local transparent derivative of the approved near bamboo layer; 54,572 bytes | Desktop-only minute sway of bamboo tips without moving the foreground rocks |
 | `public/assets/xianxia/vfx/hero-distant-spirit-birds.png` | Built-in ImageGen transparent master; 100,034 bytes | Retained source for five sparse distant ink-wash bird silhouettes; not requested at runtime |
 | `public/assets/xianxia/vfx/hero-distant-spirit-birds.webp` | Optimized derivative of the ImageGen master; 7,210 bytes | Desktop-only tiny upper-right silhouettes with slow drift; deliberately kept away from the title and moon |
