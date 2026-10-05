@@ -148,7 +148,9 @@ export function HorizontalJourney({ entered }: { entered: boolean }) {
   ];
   return <div className="journey" data-active-chapter={chapters[active].id} data-moving={moving} data-reduced-motion={reduced}>
     <header className="journey__header" inert={!entered}>
-      <a href="#hero" className="journey__brand" aria-label="Meow — Khởi hành">M<span>.</span></a>
+      <a href="#hero" className="journey__brand" aria-label="Meow — Khởi hành">
+        <img src="/assets/xianxia/logo/logo-header.png" alt="" width="162" height="54" />
+      </a>
       <button className="journey__menu-toggle" aria-expanded={menuOpen} aria-controls="chapter-navigation" onClick={() => setMenuOpen(!menuOpen)}>Chương {String(active + 1).padStart(2, '0')} · Mục lục</button>
       <nav id="chapter-navigation" className="journey__nav" aria-label="Các chương hành trình" data-open={menuOpen}>
         {chapters.map((chapter, i) => <a key={chapter.id} href={`#${chapter.id}`} aria-current={i === active ? 'page' : undefined}>{chapter.label}</a>)}

@@ -42,8 +42,7 @@
 .hero__shade { background: rgb(3 9 16 / 16%); }
 .hero__header { display: flex; justify-content: space-between; align-items: center; gap: 2rem; position: absolute; top: 0; left: 0; width: 100%; padding: 2.3rem 5.4%; z-index: 2; }
 .hero__signature { text-decoration: none; display: flex; align-items: center; gap: 1.1rem; }
-.hero__signature > span:first-child { font: 1.9rem/1 Georgia, 'Times New Roman', serif; letter-spacing: -0.12em; }
-.hero__signature-dot { color: var(--hero-gold); }
+.hero__signature img { display: block; width: 162px; height: 54px; object-fit: contain; filter: drop-shadow(0 2px 7px rgb(0 0 0 / 45%)); }
 .hero__signature-caption { font-size: 0.55rem; letter-spacing: 0.23em; padding-left: 1.2rem; border-left: 1px solid rgb(183 162 122 / 35%); color: #b8bec3; }
 .hero__nav { display: flex; align-items: center; gap: 2.4rem; }
 .hero__nav a { font-size: 0.73rem; text-decoration: none; color: #cbd0d2; letter-spacing: 0.06em; padding-block: 0.5rem; }
@@ -90,7 +89,7 @@
   .hero { min-height: 720px; height: 100svh; }
   .hero__header { padding: 1.5rem 7%; gap: 1rem; }
   .hero__signature-caption { display: none; }
-  .hero__signature > span:first-child { font-size: 1.65rem; }
+  .hero__signature img { width: 126px; height: 42px; }
   .hero__nav { gap: 1.15rem; }
   .hero__nav a { font-size: 0.65rem; min-height: 44px; display: inline-flex; align-items: center; }
   .hero__content { top: 46%; left: 8%; right: 6%; max-width: none; }

@@ -105,3 +105,23 @@ test('Hero web assets exist, use WebP and stay below a 700 KB desktop transfer b
   assert.ok(bytes < 700000, `Hero assets: ${bytes} bytes`);
   assert.ok(statSync(at('public/assets/xianxia/background/hero-mountains-mobile.webp')).size < 60000);
 });
+
+test('brand logo derivatives and browser icons have expected PNG dimensions', () => {
+  const expected = {
+    'logo-header.png': [600, 200],
+    'logo-web.png': [256, 256],
+    'apple-touch-icon.png': [180, 180],
+    'favicon-192.png': [192, 192],
+    'favicon-32.png': [32, 32],
+    'favicon-16.png': [16, 16],
+  };
+  for (const [name, [width, height]] of Object.entries(expected)) {
+    const png = readFileSync(at(`public/assets/xianxia/logo/${name}`));
+    assert.equal(png.toString('ascii', 1, 4), 'PNG');
+    assert.equal(png.readUInt32BE(16), width, name);
+    assert.equal(png.readUInt32BE(20), height, name);
+  }
+  const html = readFileSync(at('index.html'), 'utf8');
+  assert.match(html, /favicon-32\.png/);
+  assert.match(html, /apple-touch-icon\.png/);
+});

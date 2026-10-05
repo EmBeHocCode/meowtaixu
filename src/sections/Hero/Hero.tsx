@@ -19,7 +19,7 @@ export function Hero({ entered, chapterActive = true, prepared = true }: { enter
       <div className="hero__shade" />
     </div>
     <header className="hero__header">
-      <a className="hero__signature" href="#hero" aria-label="Meow — home"><span>M<span className="hero__signature-dot">.</span></span><span className="hero__signature-caption">PERSONAL PORTFOLIO</span></a>
+      <a className="hero__signature" href="#hero" aria-label="Meow — home"><img src="/assets/xianxia/logo/logo-header.png" alt="" width="162" height="54" /><span className="hero__signature-caption">PERSONAL PORTFOLIO</span></a>
       <nav className="hero__nav" aria-label="Hero navigation">
         <a href="#about">Về tôi</a><a href="#projects">Dự án</a><a href="#connect">Kết nối <span aria-hidden="true">↗</span></a>
       </nav>

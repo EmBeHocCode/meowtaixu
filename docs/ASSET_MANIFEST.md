@@ -1,5 +1,16 @@
 # Asset manifest
 
+## Brand identity
+
+| Asset | Status | Intended use |
+| --- | --- | --- |
+| `public/assets/xianxia/logo/logo-main.png` | Existing master | Retained high-resolution transparent icon source; not loaded directly by the website. |
+| `public/assets/xianxia/logo/logo-as.png` | Existing master | Retained high-resolution transparent wordmark source; not loaded directly by the website. |
+| `public/assets/xianxia/logo/logo-header.png` | Prepared | Optimized transparent header/navigation wordmark. |
+| `public/assets/xianxia/logo/logo-web.png` | Prepared | Optimized square brand mark retained for compact placements. |
+| `public/assets/xianxia/logo/favicon-16.png`, `favicon-32.png`, `favicon-192.png` | Prepared | Browser tab and installable-site icons. |
+| `public/assets/xianxia/logo/apple-touch-icon.png` | Prepared | iOS home-screen icon. |
+
 Inventory date: 2026-10-05. Paths below are relative to `E:\bio-meowtutien` unless explicitly identified as production references.
 
 ## Assets already in the working project
