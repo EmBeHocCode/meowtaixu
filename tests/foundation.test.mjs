@@ -131,6 +131,7 @@ test('Sở tu runtime artwork is optimized WebP with transparent relics', () => 
   assert.match(world, /FrameBudget/);
   assert.match(world, /selectedNow \? 29 : 20 \+ index/);
   assert.match(world, /AdditiveBlending/);
+  assert.match(world, /desktopPulse/);
   assert.match(global, /global-weather\[data-section='expertise'\]/);
 });
 

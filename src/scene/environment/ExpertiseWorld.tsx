@@ -34,7 +34,7 @@ function Artifact({ index, active, mobile, selected }: ExpertiseSceneProps & { i
     ? (index - selected) * viewport.width * 0.34
     : viewport.width * point.x;
   const y = mobile ? -viewport.height * 0.06 : viewport.height * point.y;
-  const targetOpacity = mobile ? 0 : (selectedNow ? 1 : 0.68);
+  const targetOpacity = mobile ? 0 : (selectedNow ? 1 : 0.46);
 
   useFrame((_state, delta) => {
     if (!mesh.current || !glow.current || !material.current || !glowMaterial.current) return;
@@ -46,12 +46,13 @@ function Artifact({ index, active, mobile, selected }: ExpertiseSceneProps & { i
     const focus = selectedNow ? (mobile ? 1.12 : 1.075) : 1;
     mesh.current.scale.x = MathUtils.damp(mesh.current.scale.x, focus, 4, delta);
     mesh.current.scale.y = MathUtils.damp(mesh.current.scale.y, focus, 4, delta);
-    const glowScale = selectedNow ? (mobile ? 1.22 : 1.13) : 1.02;
+    const glowScale = selectedNow ? (mobile ? 1.22 : 1.17) : 1.02;
     glow.current.scale.x = MathUtils.damp(glow.current.scale.x, glowScale, 4, delta);
     glow.current.scale.y = MathUtils.damp(glow.current.scale.y, glowScale, 4, delta);
     material.current.opacity = MathUtils.damp(material.current.opacity, active ? targetOpacity : 0.16, 4, delta);
-    glowMaterial.current.opacity = MathUtils.damp(glowMaterial.current.opacity, active && selectedNow && !mobile ? 0.28 : 0, 4, delta);
-    material.current.color.set(selectedNow ? '#fff9e9' : '#b6c0c2');
+    const desktopPulse = 0.5 + Math.sin(time.current * 1.45) * 0.08;
+    glowMaterial.current.opacity = MathUtils.damp(glowMaterial.current.opacity, active && selectedNow && !mobile ? desktopPulse : 0, 4, delta);
+    material.current.color.set(selectedNow ? '#fff3cf' : '#929da0');
   });
 
   const renderOrder = selectedNow ? 29 : 20 + index;
@@ -62,7 +63,7 @@ function Artifact({ index, active, mobile, selected }: ExpertiseSceneProps & { i
     </mesh>
     <mesh ref={glow} position={[x, y, point.z]} renderOrder={renderOrder + 1}>
       <planeGeometry args={[width, height]} />
-      <meshBasicMaterial ref={glowMaterial} map={texture} color="#ead49a" transparent depthWrite={false} toneMapped={false} opacity={0} blending={AdditiveBlending} />
+      <meshBasicMaterial ref={glowMaterial} map={texture} color="#ffd77d" transparent depthWrite={false} toneMapped={false} opacity={0} blending={AdditiveBlending} />
     </mesh>
   </>;
 }
