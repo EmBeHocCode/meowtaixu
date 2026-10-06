@@ -20,9 +20,9 @@
 .skills__environment-far { z-index: 0; filter: brightness(.66) saturate(.76); transform: scale(1.02); animation: skills-cloud-drift 24s ease-in-out infinite alternate; }
 .skills__environment-mid { z-index: 1; object-position: center; filter: brightness(.72) saturate(.82); transform: translate3d(calc(var(--env-wind) * -.45%), 0, 0); }
 .skills__environment-near { z-index: 4; object-position: center; filter: brightness(.55) saturate(.76); animation: skills-foliage-breathe 7s ease-in-out infinite alternate; transform-origin: 78% 100%; }
-.skills__frame-fx { position: absolute; z-index: 2; width: 256px; height: 256px; background-size: 400% 200%; background-repeat: no-repeat; opacity: .36; filter: blur(.2px); animation: skills-frame-sequence 2.4s steps(1) infinite; }
-.skills__frame-fx--formation { left: 51%; top: 38%; background-image: url('/assets/xianxia/techniques/formation-mist-8f.webp'); transform: scale(2.25); mix-blend-mode: screen; }
-.skills__frame-fx--talisman { right: 4%; top: 12%; z-index: 3; background-image: url('/assets/xianxia/techniques/talisman-flutter-8f.webp'); animation-duration: 1.35s; transform: scale(1.1); }
+.skills__frame-fx { position: absolute; z-index: 2; width: 256px; height: 256px; background-size: 400% 400%; background-repeat: no-repeat; opacity: .36; filter: blur(.2px); animation: skills-frame-sequence-16 1.6s steps(1) infinite; }
+.skills__frame-fx--formation { left: 51%; top: 38%; background-image: url('/assets/xianxia/techniques/formation-mist-16f.webp'); transform: scale(2.25); mix-blend-mode: screen; }
+.skills__frame-fx--talisman { right: 4%; top: 12%; z-index: 3; background-image: url('/assets/xianxia/techniques/talisman-flutter-16f.webp'); animation-duration: 1.28s; transform: scale(1.1); }
 .skills__scene { z-index: -2; pointer-events: none; }
 .skills__scene canvas { display: block; width: 100%; height: 100%; }
 
@@ -130,15 +130,23 @@
 @keyframes skills-mist { to { translate: calc(var(--env-wind) * 2.5% + 2%) 1%; } }
 @keyframes skills-cloud-drift { to { transform: scale(1.045) translate3d(-.7%, .25%, 0); filter: brightness(.7) saturate(.78); } }
 @keyframes skills-foliage-breathe { to { transform: translate3d(calc(var(--env-wind) * .55%), .3%, 0) rotate(.18deg); } }
-@keyframes skills-frame-sequence {
-  0%, 12.49% { background-position: 0 0; }
-  12.5%, 24.99% { background-position: 33.333% 0; }
-  25%, 37.49% { background-position: 66.667% 0; }
-  37.5%, 49.99% { background-position: 100% 0; }
-  50%, 62.49% { background-position: 0 100%; }
-  62.5%, 74.99% { background-position: 33.333% 100%; }
-  75%, 87.49% { background-position: 66.667% 100%; }
-  87.5%, 100% { background-position: 100% 100%; }
+@keyframes skills-frame-sequence-16 {
+  0%, 6.24% { background-position: 0 0; }
+  6.25%, 12.49% { background-position: 33.333% 0; }
+  12.5%, 18.74% { background-position: 66.667% 0; }
+  18.75%, 24.99% { background-position: 100% 0; }
+  25%, 31.24% { background-position: 0 33.333%; }
+  31.25%, 37.49% { background-position: 33.333% 33.333%; }
+  37.5%, 43.74% { background-position: 66.667% 33.333%; }
+  43.75%, 49.99% { background-position: 100% 33.333%; }
+  50%, 56.24% { background-position: 0 66.667%; }
+  56.25%, 62.49% { background-position: 33.333% 66.667%; }
+  62.5%, 68.74% { background-position: 66.667% 66.667%; }
+  68.75%, 74.99% { background-position: 100% 66.667%; }
+  75%, 81.24% { background-position: 0 100%; }
+  81.25%, 87.49% { background-position: 33.333% 100%; }
+  87.5%, 93.74% { background-position: 66.667% 100%; }
+  93.75%, 100% { background-position: 100% 100%; }
 }
 
 @media (max-width: 900px) {

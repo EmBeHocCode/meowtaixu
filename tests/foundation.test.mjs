@@ -109,17 +109,17 @@ test('Công pháp presents six technique relics and honest practical states', ()
   assert.match(section, /data-journey-input/);
   assert.match(section, /data-chapter-scroll/);
   assert.match(css, /skills-frame-sequence/);
-  assert.match(css, /formation-mist-8f\.webp/);
-  assert.match(css, /talisman-flutter-8f\.webp/);
+  assert.match(css, /formation-mist-16f\.webp/);
+  assert.match(css, /talisman-flutter-16f\.webp/);
   assert.match(journey, /<Skills active=\{active === 3 && entered\} prepared=/);
 });
 
-test('Công pháp runtime artwork is optimized layered WebP with two eight-frame sheets', () => {
+test('Công pháp runtime artwork is optimized layered WebP with two sixteen-frame sheets', () => {
   const names = [
     'chamber-mountains-far', 'chamber-platform-mid', 'chamber-foreground',
     'relic-html-foundation', 'relic-css-scroll', 'relic-javascript-plate',
     'relic-react-seal', 'relic-typescript-jade', 'relic-nextjs-scripture',
-    'formation-mist-8f', 'talisman-flutter-8f',
+    'formation-mist-16f', 'talisman-flutter-16f',
   ];
   let bytes = 0;
   for (const name of names) {
@@ -128,9 +128,9 @@ test('Công pháp runtime artwork is optimized layered WebP with two eight-frame
     assert.equal(data.toString('ascii', 8, 12), 'WEBP');
     bytes += data.length;
   }
-  assert.ok(bytes < 1600000, `Công pháp assets: ${bytes} bytes`);
+  assert.ok(bytes < 1850000, `Công pháp assets: ${bytes} bytes`);
   const handoff = readFileSync(at('docs/HANDOFF_CONG_PHAP.md'), 'utf8');
-  assert.match(handoff, /4 × 2 grid, 8 frames/);
+  assert.match(handoff, /4 × 4 grid, 16 frames/);
   assert.match(handoff, /six independent/);
 });
 
