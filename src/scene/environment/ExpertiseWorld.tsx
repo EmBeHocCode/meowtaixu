@@ -1,7 +1,7 @@
 import { Line, useTexture } from '@react-three/drei';
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { MathUtils, Mesh, MeshBasicMaterial, ShaderMaterial, SRGBColorSpace } from 'three';
+import { AdditiveBlending, MathUtils, Mesh, MeshBasicMaterial, ShaderMaterial, SRGBColorSpace } from 'three';
 import { expertiseDisciplines } from '../../data/expertise';
 import { heroAssets } from '../../data/hero-assets';
 import type { ExpertiseSceneProps } from '../../types/expertise';
@@ -19,38 +19,52 @@ function Artifact({ index, active, mobile, selected }: ExpertiseSceneProps & { i
   const texture = useTexture(expertiseDisciplines[index].asset);
   texture.colorSpace = SRGBColorSpace;
   const mesh = useRef<Mesh>(null);
+  const glow = useRef<Mesh>(null);
   const material = useRef<MeshBasicMaterial>(null);
+  const glowMaterial = useRef<MeshBasicMaterial>(null);
   const time = useRef(index * 1.4);
   const { viewport } = useThree();
   const image = texture.image as { width: number; height: number };
   const ratio = image.width / image.height;
   const point = DESKTOP[index];
   const selectedNow = selected === index;
-  const height = mobile ? viewport.height * (selectedNow ? 0.42 : 0.15) : viewport.height * point.h;
+  const height = mobile ? viewport.height * (selectedNow ? 0.64 : 0.1) : viewport.height * point.h;
   const width = height * ratio;
   const x = mobile
     ? (index - selected) * viewport.width * 0.34
     : viewport.width * point.x;
   const y = mobile ? -viewport.height * 0.06 : viewport.height * point.y;
-  const targetOpacity = mobile ? (selectedNow ? 0.96 : 0.12) : (selectedNow ? 1 : 0.58);
+  const targetOpacity = mobile ? (selectedNow ? 1 : 0.06) : (selectedNow ? 1 : 0.68);
 
   useFrame((_state, delta) => {
-    if (!mesh.current || !material.current) return;
+    if (!mesh.current || !glow.current || !material.current || !glowMaterial.current) return;
     time.current += Math.min(delta, 0.08);
     const drift = active ? Math.sin(time.current * 0.38 + point.phase) * viewport.height * 0.005 : 0;
     mesh.current.position.y = y + drift;
-    mesh.current.position.z = point.z + (selectedNow ? 0.32 : 0);
-    const focus = selectedNow ? 1.045 : 1;
+    mesh.current.position.z = point.z + (selectedNow ? 0.72 : 0);
+    glow.current.position.copy(mesh.current.position);
+    const focus = selectedNow ? (mobile ? 1.12 : 1.075) : 1;
     mesh.current.scale.x = MathUtils.damp(mesh.current.scale.x, focus, 4, delta);
     mesh.current.scale.y = MathUtils.damp(mesh.current.scale.y, focus, 4, delta);
+    const glowScale = selectedNow ? (mobile ? 1.22 : 1.13) : 1.02;
+    glow.current.scale.x = MathUtils.damp(glow.current.scale.x, glowScale, 4, delta);
+    glow.current.scale.y = MathUtils.damp(glow.current.scale.y, glowScale, 4, delta);
     material.current.opacity = MathUtils.damp(material.current.opacity, active ? targetOpacity : 0.16, 4, delta);
-    material.current.color.set(selectedNow ? '#fff4d8' : '#9eabb0');
+    glowMaterial.current.opacity = MathUtils.damp(glowMaterial.current.opacity, active && selectedNow ? (mobile ? 0.48 : 0.25) : 0, 4, delta);
+    material.current.color.set(selectedNow ? '#fff9e9' : '#b6c0c2');
   });
 
-  return <mesh ref={mesh} position={[x, y, point.z]} renderOrder={20 + index}>
-    <planeGeometry args={[width, height]} />
-    <meshBasicMaterial ref={material} map={texture} transparent depthWrite={false} toneMapped={false} opacity={0} />
-  </mesh>;
+  const renderOrder = selectedNow ? 29 : 20 + index;
+  return <>
+    <mesh ref={glow} position={[x, y, point.z]} renderOrder={renderOrder - 1}>
+      <planeGeometry args={[width, height]} />
+      <meshBasicMaterial ref={glowMaterial} map={texture} color="#d8b96f" transparent depthWrite={false} toneMapped={false} opacity={0} blending={AdditiveBlending} />
+    </mesh>
+    <mesh ref={mesh} position={[x, y, point.z]} renderOrder={renderOrder}>
+      <planeGeometry args={[width, height]} />
+      <meshBasicMaterial ref={material} map={texture} transparent depthWrite={false} toneMapped={false} opacity={0} />
+    </mesh>
+  </>;
 }
 
 function GroundMist({ active, mobile }: Pick<ExpertiseSceneProps, 'active' | 'mobile'>) {
@@ -68,7 +82,7 @@ function GroundMist({ active, mobile }: Pick<ExpertiseSceneProps, 'active' | 'mo
     material.current.uniforms.uWind.value = environment.values.wind;
     material.current.uniforms.uOpacity.value = MathUtils.damp(
       material.current.uniforms.uOpacity.value,
-      active ? (mobile ? 0.08 : 0.12) + environment.values.fog * 0.12 : 0.04,
+      active ? (mobile ? 0.15 : 0.2) + environment.values.fog * 0.14 : 0.04,
       2.5,
       delta,
     );

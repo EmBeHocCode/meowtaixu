@@ -29,12 +29,14 @@ function GlobalEnvironmentBridge() {
     for (const [property, value] of Object.entries(style)) root.style.setProperty(property, String(value));
     root.dataset.weather = environment.weather;
     root.dataset.time = environment.timeOfDay;
+    root.dataset.section = environment.activeSection ?? 'loading';
     return () => {
       for (const property of Object.keys(style)) root.style.removeProperty(property);
       delete root.dataset.weather;
       delete root.dataset.time;
+      delete root.dataset.section;
     };
-  }, [environment.timeOfDay, environment.weather, style]);
+  }, [environment.activeSection, environment.timeOfDay, environment.weather, style]);
 
   return <div className="global-weather" style={style} data-section={environment.activeSection ?? 'loading'} data-weather={environment.weather} aria-hidden="true" />;
 }

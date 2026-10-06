@@ -98,7 +98,10 @@ button { font: inherit; cursor: pointer; }
   background-size: 73px 101px, 131px 167px, 97px 128px;
   animation: global-rain-far 0.68s linear infinite;
 }
-.global-weather[data-section='hero'], .global-weather[data-weather='calm'] { opacity: 0; }
+.global-weather[data-section='hero'],
+.global-weather[data-section='expertise'],
+.global-weather[data-weather='calm'] { opacity: 0; }
+:root[data-section='expertise'] .app-shell::before { opacity: 0; }
 @keyframes global-rain-near { to { background-position: 14px 252px, 18px 308px, 22px 366px, 16px 278px; } }
 @keyframes global-rain-far { to { background-position: 10px 202px, 16px 334px, 12px 256px; } }
 .app-shell::after {

@@ -124,9 +124,13 @@ test('Sở tu runtime artwork is optimized WebP with transparent relics', () => 
   }
   assert.ok(bytes < 1000000, `Sở tu assets: ${bytes} bytes`);
   const world = readFileSync(at('src/scene/environment/ExpertiseWorld.tsx'), 'utf8');
+  const global = readFileSync(at('src/styles/global.css'), 'utf8');
   assert.match(world, /GroundMist/);
   assert.match(world, /EnergyThreads/);
   assert.match(world, /FrameBudget/);
+  assert.match(world, /selectedNow \? 29 : 20 \+ index/);
+  assert.match(world, /AdditiveBlending/);
+  assert.match(global, /global-weather\[data-section='expertise'\]/);
 });
 
 test('all requested architecture directories exist', () => {
