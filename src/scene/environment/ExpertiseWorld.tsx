@@ -21,7 +21,7 @@ function Artifact({ index, active, mobile, selected }: ExpertiseSceneProps & { i
   const mesh = useRef<Mesh>(null);
   const glow = useRef<Mesh>(null);
   const material = useRef<MeshBasicMaterial>(null);
-  const glowMaterial = useRef<MeshBasicMaterial>(null);
+  const glowMaterial = useRef<ShaderMaterial>(null);
   const time = useRef(index * 1.4);
   const { viewport } = useThree();
   const image = texture.image as { width: number; height: number };
@@ -43,6 +43,7 @@ function Artifact({ index, active, mobile, selected }: ExpertiseSceneProps & { i
     mesh.current.position.y = y + drift;
     mesh.current.position.z = point.z + (selectedNow ? 0.72 : 0);
     glow.current.position.copy(mesh.current.position);
+    glow.current.position.z -= 0.02;
     const focus = selectedNow ? (mobile ? 1.12 : 1.075) : 1;
     mesh.current.scale.x = MathUtils.damp(mesh.current.scale.x, focus, 4, delta);
     mesh.current.scale.y = MathUtils.damp(mesh.current.scale.y, focus, 4, delta);
@@ -51,19 +52,38 @@ function Artifact({ index, active, mobile, selected }: ExpertiseSceneProps & { i
     glow.current.scale.y = MathUtils.damp(glow.current.scale.y, glowScale, 4, delta);
     material.current.opacity = MathUtils.damp(material.current.opacity, active ? targetOpacity : 0.16, 4, delta);
     const desktopPulse = 0.5 + Math.sin(time.current * 1.45) * 0.08;
-    glowMaterial.current.opacity = MathUtils.damp(glowMaterial.current.opacity, active && selectedNow && !mobile ? desktopPulse : 0, 4, delta);
+    glowMaterial.current.uniforms.uOpacity.value = MathUtils.damp(
+      glowMaterial.current.uniforms.uOpacity.value,
+      active && selectedNow && !mobile ? desktopPulse : 0,
+      4,
+      delta,
+    );
     material.current.color.set(selectedNow ? '#fff3cf' : '#929da0');
   });
 
   const renderOrder = selectedNow ? 29 : 20 + index;
   return <>
+    <mesh ref={glow} position={[x, y, point.z]} renderOrder={renderOrder - 1}>
+      <planeGeometry args={[width * 1.24, height * 1.18]} />
+      <shaderMaterial ref={glowMaterial} transparent depthWrite={false} toneMapped={false} blending={AdditiveBlending}
+        uniforms={{ uOpacity: { value: 0 } }}
+        vertexShader={`varying vec2 vUv; void main(){vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`}
+        fragmentShader={`
+          varying vec2 vUv;
+          uniform float uOpacity;
+          void main(){
+            vec2 p=vUv-.5;
+            float distanceFromCenter=length(vec2(p.x*1.16,p.y));
+            float core=smoothstep(.42,.08,distanceFromCenter);
+            float halo=smoothstep(.5,.2,distanceFromCenter);
+            vec3 gold=mix(vec3(.42,.25,.07),vec3(1.0,.72,.25),core);
+            gl_FragColor=vec4(gold,(halo*.34+core*.18)*uOpacity);
+          }
+        `} />
+    </mesh>
     <mesh ref={mesh} position={[x, y, point.z]} renderOrder={renderOrder}>
       <planeGeometry args={[width, height]} />
       <meshBasicMaterial ref={material} map={texture} transparent depthWrite={false} toneMapped={false} opacity={0} />
-    </mesh>
-    <mesh ref={glow} position={[x, y, point.z]} renderOrder={renderOrder + 1}>
-      <planeGeometry args={[width, height]} />
-      <meshBasicMaterial ref={glowMaterial} map={texture} color="#ffd77d" transparent depthWrite={false} toneMapped={false} opacity={0} blending={AdditiveBlending} />
     </mesh>
   </>;
 }
