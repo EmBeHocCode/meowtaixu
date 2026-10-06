@@ -90,6 +90,30 @@ Generation prompts used the `stylized-concept` website-asset recipe: midnight bl
 
 ## Missing / not yet selected
 
+## Công pháp asset family added — 2026-10-06
+
+Support-01 produced a section-specific, layered cultivation chamber family with built-in ImageGen. No readable technology label is baked into the artwork; `HTML`, `CSS`, `JavaScript`, `React`, `TypeScript`, and `Next.js` remain semantic HTML. PNG masters are retained for provenance and recropping. Runtime integration should request only the WebP derivatives.
+
+| Runtime asset | Dimensions / bytes | Layer and intended use |
+| --- | --- | --- |
+| `public/assets/xianxia/techniques/chamber-mountains-far.webp` | 1599 × 900; 114,530 bytes | Opaque far plane: cave opening, mountain sea, cloud depth and distant pavilions. |
+| `public/assets/xianxia/techniques/chamber-platform-mid.webp` | 1599 × 900; 289,220 bytes; alpha | Mid plane: wet stone formation dais and technique archive, composed to the right of the copy zone. |
+| `public/assets/xianxia/techniques/chamber-foreground.webp` | 1600 × 900; 303,820 bytes; alpha | Near plane: wind-bent grass, bamboo, rock, low mist and blank hanging tags. |
+| `public/assets/xianxia/techniques/relic-html-foundation.webp` | 464 × 535; 83,896 bytes; alpha | Stone foundation tablet; HTML label remains HTML. |
+| `public/assets/xianxia/techniques/relic-css-scroll.webp` | 625 × 469; 78,000 bytes; alpha | Rolled pattern scroll; CSS label remains HTML. |
+| `public/assets/xianxia/techniques/relic-javascript-plate.webp` | 529 × 523; 69,406 bytes; alpha | Patinated bronze inscription plate; JavaScript label remains HTML. |
+| `public/assets/xianxia/techniques/relic-react-seal.webp` | 552 × 569; 98,830 bytes; alpha | Linked circular jade formation; React label remains HTML. |
+| `public/assets/xianxia/techniques/relic-typescript-jade.webp` | 480 × 568; 65,642 bytes; alpha | Structured dark-jade tablet; TypeScript label remains HTML. |
+| `public/assets/xianxia/techniques/relic-nextjs-scripture.webp` | 560 × 553; 96,020 bytes; alpha | Advanced bound scripture; Next.js label remains HTML. |
+| `public/assets/xianxia/techniques/formation-mist-8f.webp` | 1024 × 512; 199,268 bytes; alpha | Real eight-frame formation/mist evolution, grid 4 columns × 2 rows, 256 × 256 per frame. |
+| `public/assets/xianxia/techniques/talisman-flutter-8f.webp` | 1024 × 512; 119,664 bytes; alpha | Real eight-frame blank-paper flutter cycle, grid 4 columns × 2 rows, 256 × 256 per frame. |
+
+Animation order for both sheets is left-to-right across row 1, then left-to-right across row 2. Use UV frame stepping; do not ping-pong the sequence. The talisman top-center anchor and the formation center anchor are stable by design. Suggested playback is 7–9 fps for the talisman and 5–7 fps for formation mist, with a short idle pause or opacity rest when desired. Reduced-motion should select frame 0.
+
+Generation prompt summary: premium realistic Chinese xianxia concept art fused with refined ink-wash edges; hidden mountain technique chamber at midnight; ink black, midnight blue, mist grey, restrained moon silver, muted jade and antique gold; consistent upper-right moonlight; no characters, readable text, logos, watermark, neon or red cyberpunk. The far layer requests distant atmosphere only; the mid layer requests a transparent stone dais and archive; the foreground requests transparent grass, bamboo, rock, blank paper and mist; the relic sheet requests six distinct, spaced cultivation artifacts; the two 4 × 2 sprite prompts explicitly require the same object/effect evolving chronologically with stable scale, anchor, camera and lighting.
+
+Preparation helper: `scripts/prepare-technique-assets.py` uses Pillow to resize/compress the three layers, normalize both sprite sheets to the exact grid, and crop six individual relics from `technique-relics-sheet.png`. Total WebP runtime family: 1,518,296 bytes; a typical view can remain below that by loading relics lazily and omitting the talisman loop on mobile.
+
 These are potential future needs, not authorization to generate them all.
 
 | Directory | Missing or undecided asset | Intended use |

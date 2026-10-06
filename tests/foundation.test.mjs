@@ -91,9 +91,47 @@ test('unfinished journey chapters share a bilingual coming-soon state', () => {
   const placeholder = readFileSync(at('src/components/common/ComingSoonChapter.tsx'), 'utf8');
   assert.ok(placeholder.includes('Coming soon'));
   assert.ok(placeholder.includes('即将推出'));
-  for (const name of ['Skills', 'Focus', 'Projects', 'Connect']) {
+  for (const name of ['Focus', 'Projects', 'Connect']) {
     assert.ok(readFileSync(at(`src/sections/${name}/${name}.tsx`), 'utf8').includes('ComingSoonChapter'));
   }
+});
+
+test('Công pháp presents six technique relics and honest practical states', () => {
+  const section = readFileSync(at('src/sections/Skills/Skills.tsx'), 'utf8');
+  const data = readFileSync(at('src/data/skills.ts'), 'utf8');
+  const css = readFileSync(at('src/sections/Skills/skills.css'), 'utf8');
+  const journey = readFileSync(at('src/components/navigation/HorizontalJourney.tsx'), 'utf8');
+  assert.doesNotMatch(section, /ComingSoonChapter/);
+  for (const name of ['HTML', 'CSS', 'JavaScript', 'React', 'TypeScript', 'Next.js']) assert.ok(data.includes(`name: '${name}'`), name);
+  for (const state of ['Đang tinh luyện', 'Đang áp dụng', 'Đã có sản phẩm', 'Đang phát triển']) assert.ok(data.includes(state), state);
+  assert.match(section, /className="skills__artifact-art protected-artwork"/);
+  assert.match(section, /aria-pressed=\{selected === index\}/);
+  assert.match(section, /data-journey-input/);
+  assert.match(section, /data-chapter-scroll/);
+  assert.match(css, /skills-frame-sequence/);
+  assert.match(css, /formation-mist-8f\.webp/);
+  assert.match(css, /talisman-flutter-8f\.webp/);
+  assert.match(journey, /<Skills active=\{active === 3 && entered\} prepared=/);
+});
+
+test('Công pháp runtime artwork is optimized layered WebP with two eight-frame sheets', () => {
+  const names = [
+    'chamber-mountains-far', 'chamber-platform-mid', 'chamber-foreground',
+    'relic-html-foundation', 'relic-css-scroll', 'relic-javascript-plate',
+    'relic-react-seal', 'relic-typescript-jade', 'relic-nextjs-scripture',
+    'formation-mist-8f', 'talisman-flutter-8f',
+  ];
+  let bytes = 0;
+  for (const name of names) {
+    const data = readFileSync(at(`public/assets/xianxia/techniques/${name}.webp`));
+    assert.equal(data.toString('ascii', 0, 4), 'RIFF');
+    assert.equal(data.toString('ascii', 8, 12), 'WEBP');
+    bytes += data.length;
+  }
+  assert.ok(bytes < 1600000, `Công pháp assets: ${bytes} bytes`);
+  const handoff = readFileSync(at('docs/HANDOFF_CONG_PHAP.md'), 'utf8');
+  assert.match(handoff, /4 × 2 grid, 8 frames/);
+  assert.match(handoff, /six independent/);
 });
 
 test('Sở tu presents four accessible cultivation disciplines without a card grid', () => {
