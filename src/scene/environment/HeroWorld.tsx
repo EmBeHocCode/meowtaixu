@@ -325,10 +325,10 @@ function Moon({ mobile }: { mobile: boolean }) {
   const z = -4;
   const h = 2 * Math.tan(35 * Math.PI / 360) * (12 - z);
   const w = h * size.width / size.height;
-  const diameter = h * (mobile ? 0.13 : 0.2);
-  return <mesh position={[w * (mobile ? 0.27 : 0.18), h * 0.285, z]} renderOrder={6}>
+  const diameter = h * (mobile ? 0.13 : 0.18);
+  return <mesh position={[w * (mobile ? 0.29 : 0.28), h * (mobile ? 0.24 : 0.22), z]} renderOrder={6}>
     <planeGeometry args={[diameter, diameter]} />
-    <meshBasicMaterial map={texture} transparent opacity={0.18 + environment.values.moonlight * 0.42} depthWrite={false} toneMapped={false} color="#b5c1c7" />
+    <meshBasicMaterial map={texture} transparent opacity={0.16 + environment.values.moonlight * 0.38} depthWrite={false} toneMapped={false} color="#aebbc3" />
   </mesh>;
 }
 

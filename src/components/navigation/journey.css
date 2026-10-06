@@ -4,7 +4,15 @@ html:has(.journey), body:has(.journey) { overflow: hidden; overscroll-behavior: 
 .journey__viewport { position: absolute; inset: 0; overflow: clip; outline: none; touch-action: pan-y pinch-zoom; }
 .journey__track { width: 100%; height: 100%; display: flex; }
 .journey__chapter { flex: 0 0 100%; min-width: 0; height: 100%; position: relative; overflow: hidden; contain: layout paint style; }
-.journey__chapter[data-prepared='false'] > section { visibility: hidden; }
+/* The environment paints immediately. Foreground layers stay hidden before their
+   first entrance so the browser never flashes the completed composition. */
+.journey .journey__chapter:is([data-lifecycle='unloaded'], [data-lifecycle='preloading'], [data-lifecycle='prepared']) :is(
+  .hero__bamboo-leaves, .hero__eyebrow, .hero__title-art, .hero__metadata, .hero__positioning, .hero__poem, .hero__cta, .hero__calligraphy, .hero__footer,
+  .about__threshold-mist, .about__eyebrow, .about__section-label, .about__lead, .about__prose > p, .about__dossier,
+  .expertise__static-artifacts, .expertise__scene, .expertise__eyebrow, .expertise__title, .expertise__intro, .expertise__path, .expertise__annotation,
+  .skills__scene, .skills__weather, .skills__eyebrow, .skills__heading h2, .skills__heading > p:not(.skills__eyebrow), .skills__artifact, .skills__mastery,
+  .journey-placeholder__label, .journey-placeholder h2
+) { visibility: hidden; opacity: 0; }
 .journey__chapter--hero,
 .journey__chapter--about,
 .journey__chapter--expertise { transform: translateZ(0); backface-visibility: hidden; will-change: transform, opacity; }
@@ -40,12 +48,15 @@ html:has(.journey), body:has(.journey) { overflow: hidden; overscroll-behavior: 
 .journey__temple-atmosphere i:nth-child(4), .journey__temple-atmosphere i:nth-child(7) { --mote-drift: 7px; }
 .journey[data-active-chapter='hero'] .journey__temple-atmosphere { opacity: .62; }
 .journey[data-active-chapter='about'] .journey__temple-atmosphere { opacity: .34; }
-.journey__chapter-mark { position: absolute; z-index: 9; top: 50%; left: 50%; display: grid; justify-items: center; gap: .42rem; opacity: 0; transform: translate(-50%, -50%); color: #ead9b7; text-align: center; text-shadow: 0 5px 24px rgb(2 7 12 / 82%); pointer-events: none; }
+.journey__chapter-mark { position: absolute; z-index: 9; top: 50%; left: 50%; display: grid; justify-items: center; gap: .42rem; opacity: 0; transform: translate(-50%, -50%); color: #ead9b7; text-align: center; text-shadow: 0 5px 24px rgb(2 7 12 / 82%); pointer-events: none; view-transition-name: journey-chapter-mark; }
 .journey__chapter-mark-index { font-family: var(--font-body); font-size: var(--type-label); letter-spacing: .42em; color: #bba77e; }
 .journey__chapter-mark-title { font-family: var(--font-display); font-size: clamp(2.2rem, 5vw, 4.8rem); font-weight: 400; line-height: 1; white-space: nowrap; }
 .journey__chapter-mark i { width: clamp(5rem, 11vw, 10rem); height: 1px; margin-top: .4rem; background: linear-gradient(90deg, transparent, #d5bd8a, transparent); }
 @keyframes journey-mote-rise { 0% { translate: 0 30px; opacity: 0; } 18% { opacity: .72; } 80% { opacity: .32; } 100% { translate: var(--mote-drift) -65vh; opacity: 0; } }
 ::view-transition-group(journey-scene) { animation-duration: 680ms; animation-timing-function: cubic-bezier(.22, .75, .25, 1); }
+::view-transition-group(journey-chapter-mark) { z-index: 20; animation-duration: 680ms; }
+::view-transition-old(journey-chapter-mark) { animation: none; opacity: 0; }
+::view-transition-new(journey-chapter-mark) { animation: journey-mark-reveal 680ms cubic-bezier(.22, .75, .25, 1) both; }
 html[data-journey-direction='forward']::view-transition-old(journey-scene) { animation: journey-scene-old-forward 680ms cubic-bezier(.22, .75, .25, 1) both; }
 html[data-journey-direction='forward']::view-transition-new(journey-scene) { animation: journey-scene-new-forward 680ms cubic-bezier(.22, .75, .25, 1) both; }
 html[data-journey-direction='backward']::view-transition-old(journey-scene) { animation: journey-scene-old-backward 680ms cubic-bezier(.22, .75, .25, 1) both; }
@@ -54,6 +65,11 @@ html[data-journey-direction='backward']::view-transition-new(journey-scene) { an
 @keyframes journey-scene-new-forward { from { opacity: .28; transform: translateX(7%); filter: brightness(.78); } }
 @keyframes journey-scene-old-backward { to { opacity: .24; transform: translateX(7%); filter: brightness(.72); } }
 @keyframes journey-scene-new-backward { from { opacity: .28; transform: translateX(-7%); filter: brightness(.78); } }
+@keyframes journey-mark-reveal {
+  0% { opacity: 0; filter: blur(7px); transform: scale(.94); }
+  24%, 64% { opacity: .88; filter: blur(0); transform: scale(1); }
+  100% { opacity: 0; filter: blur(4px); transform: scale(1.025); }
+}
 .journey__mist {
   position: absolute;
   top: -10%;

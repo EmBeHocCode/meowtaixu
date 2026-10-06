@@ -17,52 +17,60 @@ import './journey.css';
 
 const interactive = 'a,button,input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="slider"],[role="button"],[data-journey-input]';
 const cinematicLayers = '[data-cinematic-layer], .expertise__backdrop, .expertise__static-artifacts, .expertise__scene, .expertise__content, .expertise__paths, .expertise__annotation, .skills__environment, .skills__scene, .skills__weather, .skills__heading, .skills__archive, .skills__mastery, .journey-placeholder';
-const revealTargets = [
+const atmosphereRevealTargets = [
+  '.hero__bamboo-leaves', '.about__threshold-mist',
+  '.expertise__static-artifacts', '.expertise__scene',
+  '.skills__scene', '.skills__weather',
+].join(', ');
+const copyRevealTargets = [
   '.hero__eyebrow', '.hero__metadata', '.hero__positioning', '.hero__poem', '.hero__cta',
-  '.about__eyebrow', '.about__section-label', '.about__lead', '.about__prose > p',
-  '.expertise__eyebrow', '.expertise__title', '.expertise__intro', '.expertise__path', '.expertise__annotation',
-  '.skills__eyebrow', '.skills__heading h2', '.skills__heading > p:not(.skills__eyebrow)', '.skills__mastery',
+  '.hero__calligraphy', '.hero__footer',
+  '.about__eyebrow', '.about__section-label', '.about__prose > p',
+  '.expertise__eyebrow', '.expertise__title', '.expertise__intro', '.expertise__annotation',
+  '.skills__eyebrow', '.skills__heading h2', '.skills__heading > p:not(.skills__eyebrow)',
   '.journey-placeholder__label', '.journey-placeholder h2',
 ].join(', ');
-const galleryHeadingTargets = '.hero__title-art, .about__lead';
-const skillsArtifactTargets = '.skills__artifact';
+const headingRevealTargets = '.hero__title-art, .about__lead';
+const objectRevealTargets = '.about__dossier, .expertise__path, .skills__artifact, .skills__mastery';
+const allRevealTargets = [atmosphereRevealTargets, copyRevealTargets, headingRevealTargets, objectRevealTargets].join(', ');
 type ViewTransitionDocument = Document & {
   startViewTransition?: (update: () => void) => { finished: Promise<void> };
 };
 
 function playChapterReveal(chapter: HTMLElement, direction = 1, onComplete?: () => void) {
-  const layers = chapter.querySelectorAll<HTMLElement>(cinematicLayers);
-  const targets = chapter.querySelectorAll<HTMLElement>(revealTargets);
-  const headings = chapter.querySelectorAll<HTMLElement>(galleryHeadingTargets);
-  const artifacts = chapter.querySelectorAll<HTMLElement>(skillsArtifactTargets);
+  const atmosphere = chapter.querySelectorAll<HTMLElement>(atmosphereRevealTargets);
+  const copy = chapter.querySelectorAll<HTMLElement>(copyRevealTargets);
+  const headings = chapter.querySelectorAll<HTMLElement>(headingRevealTargets);
+  const objects = chapter.querySelectorAll<HTMLElement>(objectRevealTargets);
+  const allTargets = chapter.querySelectorAll<HTMLElement>(allRevealTargets);
+  gsap.set(allTargets, { visibility: 'visible' });
   const timeline = gsap.timeline({
     onComplete: () => {
-      gsap.set(layers, { clearProps: 'transform,filter,opacity' });
-      gsap.set(targets, { clearProps: 'transform,filter,opacity' });
-      gsap.set(headings, { clearProps: 'clipPath,transform,filter,opacity' });
-      gsap.set(artifacts, { clearProps: 'filter,opacity,transform' });
+      gsap.set(allTargets, { clearProps: 'visibility,clipPath,transform,filter,opacity' });
       onComplete?.();
     },
   });
-  timeline.fromTo(layers,
-    { opacity: 0.5, scale: 1.018, filter: 'blur(3px) brightness(.78)' },
-    { opacity: 1, scale: 1, filter: 'blur(0px) brightness(1)', duration: 0.82, stagger: 0.035, ease: 'power3.out' }, 0)
-    .fromTo(targets,
-      { opacity: 0, y: 16, filter: 'blur(5px)' },
-      { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.56, stagger: 0.055, ease: 'power2.out', overwrite: 'auto' }, 0.12)
-    .fromTo(headings,
+  if (atmosphere.length) timeline.fromTo(atmosphere,
+    { opacity: 0, y: 8, filter: 'blur(4px) brightness(.82)' },
+    { opacity: 1, y: 0, filter: 'blur(0px) brightness(1)', duration: 0.78, stagger: 0.06, ease: 'power2.out' }, 0.08);
+  if (headings.length) timeline.fromTo(headings,
       { opacity: 0, x: direction * 20, clipPath: direction > 0 ? 'inset(0 100% 0 0)' : 'inset(0 0 0 100%)', filter: 'blur(4px)' },
-      { opacity: 1, x: 0, clipPath: 'inset(0 0% 0 0%)', filter: 'blur(0px)', duration: 0.82, stagger: 0.06, ease: 'power4.out', overwrite: 'auto' }, 0.12);
-  if (artifacts.length) timeline.fromTo(artifacts,
-    { opacity: 0, y: 12, filter: 'blur(3px) brightness(.8)' },
-    { opacity: 1, y: 0, filter: 'blur(0px) brightness(1)', duration: 0.54, stagger: 0.065, ease: 'power2.out', overwrite: 'auto' }, 0.3);
+      { opacity: 1, x: 0, clipPath: 'inset(0 0% 0 0%)', filter: 'blur(0px)', duration: 0.78, stagger: 0.07, ease: 'power4.out', overwrite: 'auto' }, 0.24);
+  if (objects.length) timeline.fromTo(objects,
+      { opacity: 0, y: 14, scale: 0.985, filter: 'blur(3px) brightness(.82)' },
+      { opacity: 1, y: 0, scale: 1, filter: 'blur(0px) brightness(1)', duration: 0.62, stagger: 0.085, ease: 'power3.out', overwrite: 'auto' }, 0.34);
+  if (copy.length) timeline.fromTo(copy,
+      { opacity: 0, y: 14, filter: 'blur(4px)' },
+      { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.5, stagger: 0.05, ease: 'power2.out', overwrite: 'auto' }, 0.42);
   const heroMist = chapter.querySelector<HTMLElement>('.hero__reveal-mist');
   if (heroMist) timeline.fromTo(heroMist, { opacity: 0.42, yPercent: 0 }, { opacity: 0, yPercent: 3, duration: 1.5, ease: 'power2.out' }, 0);
   return timeline;
 }
 
 export function HorizontalJourney({ entered, onInitialPrepared }: { entered: boolean; onInitialPrepared: () => void }) {
-  const initialIndex = useRef(Math.max(0, chapterIndex(location.hash)));
+  // A fresh document always begins at the entrance. Hash navigation still works
+  // normally after the journey has mounted, but reload never skips the Hero.
+  const initialIndex = useRef(0);
   const [active, setActive] = useState(initialIndex.current);
   const [moving, setMoving] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -155,9 +163,7 @@ export function HorizontalJourney({ entered, onInitialPrepared }: { entered: boo
       gsap.set(chapterMark.current, { opacity: 0, scale: 1, clearProps: 'filter' });
       gsap.set(rail.children, { clearProps: 'opacity,filter,transform,transformOrigin' });
       gsap.set(rail.querySelectorAll(cinematicLayers), { clearProps: 'transform,filter,opacity' });
-      gsap.set(rail.querySelectorAll(revealTargets), { clearProps: 'transform,filter,opacity' });
-      gsap.set(rail.querySelectorAll(skillsArtifactTargets), { clearProps: 'filter,opacity' });
-      gsap.set(rail.querySelectorAll(galleryHeadingTargets), { clearProps: 'clipPath,transform,filter,opacity' });
+      gsap.set(rail.querySelectorAll(allRevealTargets), { clearProps: 'visibility,clipPath,transform,filter,opacity' });
     };
     const finishEntrance = (chapter: number) => {
       entranceCompleted.current.add(chapter);
@@ -193,6 +199,9 @@ export function HorizontalJourney({ entered, onInitialPrepared }: { entered: boo
       const firstEntry = !entranceCompleted.current.has(next);
       const outgoing = rail.children[previous] as HTMLElement;
       const incoming = rail.children[next] as HTMLElement;
+      if (firstEntry && !reduced) {
+        gsap.set(incoming.querySelectorAll(allRevealTargets), { visibility: 'hidden', opacity: 0 });
+      }
       const outgoingLayers = outgoing.querySelectorAll<HTMLElement>(cinematicLayers);
       const incomingLayers = incoming.querySelectorAll<HTMLElement>(cinematicLayers);
       tween?.kill();
@@ -217,6 +226,9 @@ export function HorizontalJourney({ entered, onInitialPrepared }: { entered: boo
         flushSync(() => setMoving(true));
         const transition = viewDocument.startViewTransition(() => {
           gsap.set(rail, { x, opacity: 1 });
+          // The live marker is promoted into its own View Transition layer so it
+          // remains visible above the scene snapshots during adjacent navigation.
+          gsap.set(mark, { opacity: 1, scale: 1, filter: 'blur(0px)' });
           flushSync(() => setActive(next));
         });
         transition.finished.finally(() => {

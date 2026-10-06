@@ -33,7 +33,7 @@ export function About({ active = true }: { active?: boolean }) {
       // This avoids a React render + image/clip-path paint on the first transition.
       visited.current = true;
       previousOpen.current = open;
-      gsap.set(element, { '--unroll': open ? 1 : 0.08, opacity: 1 });
+      gsap.set(element, { '--unroll': open ? 1 : 0.08 });
       gsap.set(rows, { opacity: open ? 1 : 0 });
       gsap.set(inscription, { opacity: open ? 0.7 : 0 });
       gsap.set(label, { opacity: 1 });
@@ -42,7 +42,7 @@ export function About({ active = true }: { active?: boolean }) {
     const unchanged = !first && previousOpen.current === open;
     previousOpen.current = open;
     if (reduced || unchanged) {
-      gsap.set(element, { '--unroll': open ? 1 : 0.08, opacity: 1 });
+      gsap.set(element, { '--unroll': open ? 1 : 0.08 });
       gsap.set(rows, { opacity: open ? 1 : 0 });
       gsap.set(inscription, { opacity: open ? 0.7 : 0 });
       gsap.set(label, { opacity: 1 });
@@ -55,8 +55,7 @@ export function About({ active = true }: { active?: boolean }) {
     if (open) {
       gsap.set(rows, { opacity: 0 });
       gsap.set(inscription, { opacity: 0 });
-      timeline.to(element, { opacity: 1, duration: 0.25 })
-        .to(element, { '--unroll': 1, duration: 0.85, ease: 'power2.inOut' })
+      timeline.to(element, { '--unroll': 1, duration: 0.85, ease: 'power2.inOut' })
         .to(rows, { opacity: 1, stagger: 0.045, duration: 0.3 })
         .to(inscription, { opacity: 0.7, duration: 0.3 })
         .to(label, { opacity: 1, duration: 0.3 });

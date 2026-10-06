@@ -215,6 +215,8 @@ test('chapter motion, resumable writing and technique pointer remain coordinated
   const techniques = readFileSync(at('src/scene/techniques/TechniquesWorld.tsx'), 'utf8');
   const lifecycle = readFileSync(at('src/components/navigation/chapter-lifecycle.ts'), 'utf8');
   assert.match(journey, /Math\.abs\(next - previous\) === 1/);
+  assert.match(journey, /const initialIndex = useRef\(0\)/);
+  assert.match(journey, /gsap\.set\(mark, \{ opacity: 1/);
   assert.match(journey, /entranceCompleted\.current\.has\(next\)/);
   assert.match(journey, /revealFirstEntry\(next, incoming, direction\)/);
   assert.match(journey, /pendingNavigation\.current/);
