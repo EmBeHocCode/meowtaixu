@@ -134,6 +134,7 @@ function AnimatedOverlay({ url, z, kind, active, mobile }: {
       const shader = material.current as ShaderMaterial;
       shader.uniforms.uTime.value = time.current;
       shader.uniforms.uWind.value = environment.values.wind;
+      shader.uniforms.uRain.value = environment.values.rain;
     }
   });
 
@@ -146,16 +147,17 @@ function AnimatedOverlay({ url, z, kind, active, mobile }: {
     /> : <shaderMaterial
       ref={material as Ref<ShaderMaterial>}
       transparent depthWrite={false} toneMapped={false}
-      uniforms={{ uMap: { value: texture }, uTime: { value: 0 }, uOpacity: { value: 0.78 }, uWind: { value: 0.1 } }}
+      uniforms={{ uMap: { value: texture }, uTime: { value: 0 }, uOpacity: { value: 0.78 }, uWind: { value: 0.1 }, uRain: { value: 0 } }}
       vertexShader={`
         varying vec2 vUv;
         uniform float uTime;
         uniform float uWind;
+        uniform float uRain;
         void main() {
           vUv = uv;
           vec3 p = position;
           float anchored = smoothstep(0.18, 1.0, uv.y);
-          float gust = 0.65 + uWind * 2.4;
+          float gust = 0.65 + uWind * 2.4 + uRain * 0.35;
           p.x += sin(uTime * (0.42 + uWind * 0.8) + uv.y * 4.2) * anchored * (0.02 + uWind * 0.07) * gust;
           p.y += sin(uTime * 0.31 + uv.x * 3.0) * anchored * (0.006 + uWind * 0.012);
           gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
@@ -165,9 +167,11 @@ function AnimatedOverlay({ url, z, kind, active, mobile }: {
         varying vec2 vUv;
         uniform sampler2D uMap;
         uniform float uOpacity;
+        uniform float uRain;
         void main() {
           vec4 texel = texture2D(uMap, vUv);
-          gl_FragColor = vec4(texel.rgb, texel.a * uOpacity);
+          vec3 wetColor = mix(texel.rgb, texel.rgb * vec3(0.72, 0.82, 0.86), uRain * 0.28);
+          gl_FragColor = vec4(wetColor, texel.a * uOpacity);
         }
       `}
     />}

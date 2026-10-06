@@ -168,6 +168,17 @@ test('approved section baselines, global styling and preloader remain intact', (
   for (const [file, hash] of Object.entries(baseline)) assert.equal(digest(file), hash, file);
 });
 
+test('Hero rain uses shader points with grounded splash and ripple responses', () => {
+  const weather = readFileSync(at('src/scene/environment/hero/WeatherEffects.tsx'), 'utf8');
+  assert.match(weather, /function RainSystem/);
+  assert.match(weather, /function RainImpacts/);
+  assert.match(weather, /const impactZones/);
+  assert.match(weather, /rippleGeometry/);
+  assert.ok((weather.match(/<points\b/g) ?? []).length >= 3, 'rain, ripple and splash should render as points');
+  assert.ok((weather.match(/new ShaderMaterial\s*\(/g) ?? []).length >= 3, 'rain effects should use shader materials');
+  assert.doesNotMatch(weather, /LineSegments|<lineSegments\b/, 'rain must not regress to line-segment streaks');
+});
+
 test('About scroll is a compact WebP with an unchanged retained PNG master', () => {
   const data = readFileSync(at('public/assets/xianxia/props/about-scholar-scroll.webp'));
   assert.equal(data.toString('ascii', 0, 4), 'RIFF');
