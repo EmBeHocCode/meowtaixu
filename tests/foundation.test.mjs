@@ -111,6 +111,7 @@ test('Sở tu presents four accessible cultivation disciplines without a card gr
   assert.doesNotMatch(css, /grid-template-columns:\s*repeat\(2/);
   assert.match(css, /Each transparent button covers its relic/);
   assert.match(journey, /<Expertise active=\{active === 2 && entered\} prepared=/);
+  assert.doesNotMatch(css, /-webkit-line-clamp/);
 });
 
 test('Sở tu runtime artwork is optimized WebP with transparent relics', () => {
