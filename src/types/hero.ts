@@ -5,4 +5,5 @@ export type HeroSceneProps = {
   mobile: boolean;
   active: boolean;
   motion: RefObject<HeroMotion>;
+  onReady?: () => void;
 };

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { expertiseBackground, expertiseDisciplines } from '../../data/expertise';
 import { useReducedMotion } from '../../features/reduced-motion/useReducedMotion';
@@ -6,31 +6,37 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { ExpertiseSceneRoot } from '../../scene/ExpertiseSceneRoot';
 import './expertise.css';
 
-export function Expertise({ active, prepared }: { active: boolean; prepared: boolean }) {
+export function Expertise({ active, prepared, onSceneReady }: { active: boolean; prepared: boolean; onSceneReady?: () => void }) {
   const [selected, setSelected] = useState(1);
   const [sceneReady, setSceneReady] = useState(false);
+  const written = useRef<Record<string, number>>({});
+  const [visibleCharacters, setVisibleCharacters] = useState(0);
   const section = useRef<HTMLElement>(null);
-  const visited = useRef(false);
   const reducedMotion = useReducedMotion();
   const mobile = useMediaQuery('(max-width: 767px)');
   const discipline = expertiseDisciplines[selected];
+  const descriptionCharacters = useMemo(() => Array.from(discipline.description), [discipline.description]);
 
   useEffect(() => {
-    if (!active || !section.current || visited.current || reducedMotion) return;
-    visited.current = true;
-    const context = gsap.context(() => {
-      gsap.timeline({ defaults: { ease: 'power2.out' } })
-        .fromTo('.expertise__veil', { opacity: 0.92 }, { opacity: 0, duration: 0.7 }, 0)
-        .fromTo('.expertise__eyebrow, .expertise__title, .expertise__intro', { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.68, stagger: 0.08 }, 0.18)
-        .fromTo('.expertise__path', { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.08 }, 0.35)
-        .fromTo('.expertise__annotation', { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.55 }, 0.64);
-    }, section);
-    return () => context.revert();
-  }, [active, reducedMotion]);
+    const current = reducedMotion ? descriptionCharacters.length : (written.current[discipline.id] ?? 0);
+    setVisibleCharacters(current);
+    if (!active || reducedMotion || current >= descriptionCharacters.length) return;
+    const timer = window.setInterval(() => {
+      setVisibleCharacters(previous => {
+        const next = Math.min(descriptionCharacters.length, previous + 1);
+        written.current[discipline.id] = next;
+        if (next >= descriptionCharacters.length) window.clearInterval(timer);
+        return next;
+      });
+    }, 24);
+    return () => window.clearInterval(timer);
+  }, [active, discipline.id, descriptionCharacters, reducedMotion]);
 
   const choose = (index: number) => {
+    setVisibleCharacters(reducedMotion ? Array.from(expertiseDisciplines[index].description).length : (written.current[expertiseDisciplines[index].id] ?? 0));
     setSelected(index);
-    if (!reducedMotion) gsap.fromTo('.expertise__annotation-copy', { opacity: 0, y: 7 }, { opacity: 1, y: 0, duration: 0.38, ease: 'power2.out' });
+    const annotation = section.current?.querySelector('.expertise__annotation-copy');
+    if (!reducedMotion && annotation) gsap.fromTo(annotation, { opacity: 0, y: 7 }, { opacity: 1, y: 0, duration: 0.38, ease: 'power2.out' });
   };
 
   return <section
@@ -49,7 +55,7 @@ export function Expertise({ active, prepared }: { active: boolean; prepared: boo
       {expertiseDisciplines.map((item, index) => <img key={item.id} src={item.asset} alt="" draggable="false" data-selected={selected === index} />)}
     </div>
     <div className="expertise__scene" aria-hidden="true">
-      <ExpertiseSceneRoot active={active} prepared={prepared} mobile={mobile} selected={selected} reducedMotion={reducedMotion} onReady={() => setSceneReady(true)} />
+      <ExpertiseSceneRoot active={active} prepared={prepared} mobile={mobile} selected={selected} reducedMotion={reducedMotion} onReady={() => { setSceneReady(true); onSceneReady?.(); }} />
     </div>
     <div className="expertise__shade" aria-hidden="true" />
     <div className="expertise__veil" aria-hidden="true" />
@@ -86,7 +92,11 @@ export function Expertise({ active, prepared }: { active: boolean; prepared: boo
         <h3>{discipline.title}</h3>
         <p lang="en">{discipline.english}</p>
         <div aria-hidden="true" />
-        <p>{discipline.description}</p>
+        <p className="expertise__annotation-description">
+          <span aria-hidden="true">{descriptionCharacters.slice(0, visibleCharacters).join('')}</span>
+          {visibleCharacters < descriptionCharacters.length && <i className="expertise__ink-cursor" aria-hidden="true" />}
+          <span className="sr-only">{discipline.description}</span>
+        </p>
       </div>
     </aside>
   </section>;

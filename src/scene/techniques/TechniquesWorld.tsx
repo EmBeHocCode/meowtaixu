@@ -4,6 +4,8 @@ import { AdditiveBlending, BufferAttribute, BufferGeometry, Group, MathUtils, Po
 import { useEnvironment } from '../../features/environment';
 import type { TechniquesSceneProps } from '../../types/skills';
 
+const artifactPointerAngles = [2.34, 1.88, 1.83, 1.47, -2.76, -0.68] as const;
+
 function Formation({ active, selected, mobile }: Pick<TechniquesSceneProps, 'active' | 'selected' | 'mobile'>) {
   const group = useRef<Group>(null);
   const glow = useRef<Group>(null);
@@ -12,7 +14,12 @@ function Formation({ active, selected, mobile }: Pick<TechniquesSceneProps, 'act
     if (!group.current || !glow.current) return;
     const energy = active ? 1 : 0;
     group.current.rotation.z += delta * (0.025 + environment.values.wind * 0.018) * energy;
-    glow.current.rotation.z -= delta * 0.018 * energy;
+    const targetRotation = artifactPointerAngles[selected] - selected * Math.PI / 3;
+    const rotationDelta = Math.atan2(
+      Math.sin(targetRotation - glow.current.rotation.z),
+      Math.cos(targetRotation - glow.current.rotation.z),
+    );
+    glow.current.rotation.z += rotationDelta * (1 - Math.exp(-6 * delta)) * energy;
     const pulse = 0.92 + Math.sin(clock.elapsedTime * 0.7 + selected * 0.4) * 0.025;
     glow.current.scale.setScalar(pulse);
   });
@@ -23,6 +30,13 @@ function Formation({ active, selected, mobile }: Pick<TechniquesSceneProps, 'act
       <mesh rotation={[0, 0, Math.PI / 3]}><torusGeometry args={[1.72, 0.008, 4, 64]} /><meshBasicMaterial color="#b59a62" transparent opacity={0.25} /></mesh>
     </group>
     <group ref={glow} rotation={[0, 0, Math.PI / 6]}>
+      <mesh
+        position={[Math.cos(selected * Math.PI / 3) * .86, Math.sin(selected * Math.PI / 3) * .86, -0.01]}
+        rotation={[0, 0, selected * Math.PI / 3]}
+      >
+        <planeGeometry args={[1.62, 0.012]} />
+        <meshBasicMaterial color="#cdb272" transparent opacity={0.28} blending={AdditiveBlending} />
+      </mesh>
       {[0, 1, 2, 3, 4, 5].map(index => <mesh key={index} position={[Math.cos(index * Math.PI / 3) * 1.72, Math.sin(index * Math.PI / 3) * 1.72, 0]}>
         <circleGeometry args={[index === selected ? 0.075 : 0.038, 10]} />
         <meshBasicMaterial color={index === selected ? '#d1b777' : '#789889'} transparent opacity={index === selected ? 0.78 : 0.32} blending={AdditiveBlending} />

@@ -1,4 +1,5 @@
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { flushSync } from 'react-dom';
 import gsap from 'gsap';
 import { useReducedMotion } from '../../features/reduced-motion/useReducedMotion';
 import { useEnvironment } from '../../features/environment';
@@ -11,63 +12,281 @@ import { Projects } from '../../sections/Projects/Projects';
 import { Connect } from '../../sections/Connect/Connect';
 import { heroAssets } from '../../data/hero-assets';
 import { chapters, chapterIndex, wheelDelta, canScrollInside, WheelGate } from './journey-model';
+import { preloadChapterAssets, type ChapterLifecycle } from './chapter-lifecycle';
 import './journey.css';
 
 const interactive = 'a,button,input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="slider"],[role="button"],[data-journey-input]';
+const cinematicLayers = '[data-cinematic-layer], .expertise__backdrop, .expertise__static-artifacts, .expertise__scene, .expertise__content, .expertise__paths, .expertise__annotation, .skills__environment, .skills__scene, .skills__weather, .skills__heading, .skills__archive, .skills__mastery, .journey-placeholder';
+const revealTargets = [
+  '.hero__eyebrow', '.hero__metadata', '.hero__positioning', '.hero__poem', '.hero__cta',
+  '.about__eyebrow', '.about__section-label', '.about__lead', '.about__prose > p',
+  '.expertise__eyebrow', '.expertise__title', '.expertise__intro', '.expertise__path', '.expertise__annotation',
+  '.skills__eyebrow', '.skills__heading h2', '.skills__heading > p:not(.skills__eyebrow)', '.skills__mastery',
+  '.journey-placeholder__label', '.journey-placeholder h2',
+].join(', ');
+const galleryHeadingTargets = '.hero__title-art, .about__lead';
+const skillsArtifactTargets = '.skills__artifact';
+type ViewTransitionDocument = Document & {
+  startViewTransition?: (update: () => void) => { finished: Promise<void> };
+};
 
-export function HorizontalJourney({ entered }: { entered: boolean }) {
-  const [active, setActive] = useState(() => Math.max(0, chapterIndex(location.hash)));
+function playChapterReveal(chapter: HTMLElement, direction = 1, onComplete?: () => void) {
+  const layers = chapter.querySelectorAll<HTMLElement>(cinematicLayers);
+  const targets = chapter.querySelectorAll<HTMLElement>(revealTargets);
+  const headings = chapter.querySelectorAll<HTMLElement>(galleryHeadingTargets);
+  const artifacts = chapter.querySelectorAll<HTMLElement>(skillsArtifactTargets);
+  const timeline = gsap.timeline({
+    onComplete: () => {
+      gsap.set(layers, { clearProps: 'transform,filter,opacity' });
+      gsap.set(targets, { clearProps: 'transform,filter,opacity' });
+      gsap.set(headings, { clearProps: 'clipPath,transform,filter,opacity' });
+      gsap.set(artifacts, { clearProps: 'filter,opacity,transform' });
+      onComplete?.();
+    },
+  });
+  timeline.fromTo(layers,
+    { opacity: 0.5, scale: 1.018, filter: 'blur(3px) brightness(.78)' },
+    { opacity: 1, scale: 1, filter: 'blur(0px) brightness(1)', duration: 0.82, stagger: 0.035, ease: 'power3.out' }, 0)
+    .fromTo(targets,
+      { opacity: 0, y: 16, filter: 'blur(5px)' },
+      { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.56, stagger: 0.055, ease: 'power2.out', overwrite: 'auto' }, 0.12)
+    .fromTo(headings,
+      { opacity: 0, x: direction * 20, clipPath: direction > 0 ? 'inset(0 100% 0 0)' : 'inset(0 0 0 100%)', filter: 'blur(4px)' },
+      { opacity: 1, x: 0, clipPath: 'inset(0 0% 0 0%)', filter: 'blur(0px)', duration: 0.82, stagger: 0.06, ease: 'power4.out', overwrite: 'auto' }, 0.12);
+  if (artifacts.length) timeline.fromTo(artifacts,
+    { opacity: 0, y: 12, filter: 'blur(3px) brightness(.8)' },
+    { opacity: 1, y: 0, filter: 'blur(0px) brightness(1)', duration: 0.54, stagger: 0.065, ease: 'power2.out', overwrite: 'auto' }, 0.3);
+  const heroMist = chapter.querySelector<HTMLElement>('.hero__reveal-mist');
+  if (heroMist) timeline.fromTo(heroMist, { opacity: 0.42, yPercent: 0 }, { opacity: 0, yPercent: 3, duration: 1.5, ease: 'power2.out' }, 0);
+  return timeline;
+}
+
+export function HorizontalJourney({ entered, onInitialPrepared }: { entered: boolean; onInitialPrepared: () => void }) {
+  const initialIndex = useRef(Math.max(0, chapterIndex(location.hash)));
+  const [active, setActive] = useState(initialIndex.current);
   const [moving, setMoving] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [requested, setRequested] = useState<Set<number>>(() => new Set([initialIndex.current, initialIndex.current - 1, initialIndex.current + 1].filter(index => index >= 0 && index < chapters.length)));
+  const [assetReady, setAssetReady] = useState<boolean[]>(() => chapters.map((_, index) => index > 3));
+  const [sceneReady, setSceneReady] = useState<boolean[]>(() => chapters.map((_, index) => index === 1 || index > 3));
+  const [lifecycles, setLifecycles] = useState<ChapterLifecycle[]>(() => chapters.map((_, index) => requested.has(index) ? 'preloading' : 'unloaded'));
   const reduced = useReducedMotion();
   const { setActiveSection } = useEnvironment();
   const viewport = useRef<HTMLElement>(null);
   const track = useRef<HTMLDivElement>(null);
   const mist = useRef<HTMLDivElement>(null);
+  const energy = useRef<HTMLDivElement>(null);
+  const chapterMark = useRef<HTMLDivElement>(null);
+  const initialRevealPlayed = useRef(false);
+  const entranceCompleted = useRef(new Set<number>());
+  const entranceLocked = useRef(false);
+  const pendingNavigation = useRef<{ index: number; history: boolean } | null>(null);
+  const preparedRef = useRef<boolean[]>(chapters.map(() => false));
   const index = useRef(active);
   const navigate = useRef<(next: number, history?: boolean) => void>(() => {});
+
+  const prepare = useCallback((chapter: number) => {
+    if (chapter < 0 || chapter >= chapters.length) return;
+    setRequested(current => current.has(chapter) ? current : new Set([...current, chapter]));
+  }, []);
+  const markSceneReady = useCallback((chapter: number) => setSceneReady(current => current[chapter] ? current : current.map((value, index) => index === chapter ? true : value)), []);
+  const markHeroSceneReady = useCallback(() => markSceneReady(0), [markSceneReady]);
+  const markExpertiseSceneReady = useCallback(() => markSceneReady(2), [markSceneReady]);
+  const markSkillsSceneReady = useCallback(() => markSceneReady(3), [markSceneReady]);
+  const prepared = chapters.map((_, chapter) => requested.has(chapter) && assetReady[chapter] && (reduced || sceneReady[chapter]));
+  preparedRef.current = prepared;
+
+  useEffect(() => {
+    let cancelled = false;
+    requested.forEach(chapter => {
+      if (assetReady[chapter]) return;
+      preloadChapterAssets(chapter).then(() => {
+        if (cancelled) return;
+        setAssetReady(current => current[chapter] ? current : current.map((value, index) => index === chapter ? true : value));
+      });
+    });
+    return () => { cancelled = true; };
+  }, [assetReady, requested]);
+
+  useEffect(() => {
+    setLifecycles(current => current.map((phase, chapter) => {
+      if (chapter === active && entranceCompleted.current.has(chapter)) return moving ? phase : 'active';
+      if (prepared[chapter] && (phase === 'unloaded' || phase === 'preloading')) return 'prepared';
+      if (requested.has(chapter) && phase === 'unloaded') return 'preloading';
+      return phase;
+    }));
+  }, [active, moving, prepared.join(','), requested]);
+
+  useEffect(() => {
+    if (prepared[initialIndex.current]) onInitialPrepared();
+  }, [onInitialPrepared, prepared.join(',')]);
+
+  useEffect(() => {
+    prepare(active - 1);
+    prepare(active + 1);
+  }, [active, prepare]);
+
+  useEffect(() => {
+    if (reduced) return;
+    const timers = [0, 2, 3].filter(chapter => requested.has(chapter) && !sceneReady[chapter]).map(chapter => window.setTimeout(() => markSceneReady(chapter), 8_000));
+    return () => timers.forEach(window.clearTimeout);
+  }, [markSceneReady, reduced, requested, sceneReady]);
+
+  useEffect(() => {
+    const pending = pendingNavigation.current;
+    if (!pending || !prepared[pending.index] || entranceLocked.current) return;
+    pendingNavigation.current = null;
+    navigate.current(pending.index, pending.history);
+  }, [prepared.join(',')]);
 
   useLayoutEffect(() => {
     const host = viewport.current!;
     const rail = track.current!;
     let locked = false;
     let tween: gsap.core.Timeline | undefined;
+    let revealTween: gsap.core.Timeline | undefined;
     const place = () => gsap.set(rail, { x: -index.current * host.clientWidth, opacity: 1 });
     const finish = () => {
       locked = false;
+      setActive(index.current);
       setMoving(false);
       gsap.set(mist.current, { opacity: 0, x: 0, xPercent: 0, yPercent: 0 });
+      gsap.set(energy.current, { opacity: 0, xPercent: 0, scaleX: 1 });
+      gsap.set(chapterMark.current, { opacity: 0, scale: 1, clearProps: 'filter' });
+      gsap.set(rail.children, { clearProps: 'opacity,filter,transform,transformOrigin' });
+      gsap.set(rail.querySelectorAll(cinematicLayers), { clearProps: 'transform,filter,opacity' });
+      gsap.set(rail.querySelectorAll(revealTargets), { clearProps: 'transform,filter,opacity' });
+      gsap.set(rail.querySelectorAll(skillsArtifactTargets), { clearProps: 'filter,opacity' });
+      gsap.set(rail.querySelectorAll(galleryHeadingTargets), { clearProps: 'clipPath,transform,filter,opacity' });
+    };
+    const finishEntrance = (chapter: number) => {
+      entranceCompleted.current.add(chapter);
+      entranceLocked.current = false;
+      setLifecycles(current => current.map((phase, position) => position === chapter ? 'active' : phase));
+      const pending = pendingNavigation.current;
+      if (pending && preparedRef.current[pending.index]) {
+        pendingNavigation.current = null;
+        navigate.current(pending.index, pending.history);
+      }
+    };
+    const revealFirstEntry = (chapter: number, element: HTMLElement, direction: number) => {
+      if (reduced || entranceCompleted.current.has(chapter)) {
+        finishEntrance(chapter);
+        return;
+      }
+      entranceLocked.current = true;
+      setLifecycles(current => current.map((phase, position) => position === chapter ? 'entering' : phase));
+      revealTween = playChapterReveal(element, direction, () => finishEntrance(chapter));
     };
     place();
     const go = (next: number, writeHistory = true) => {
       next = Math.min(chapters.length - 1, Math.max(0, next));
       setMenuOpen(false);
       if (next === index.current) return;
-      const direction = next > index.current ? 1 : -1;
+      if (entranceLocked.current || !preparedRef.current[next]) {
+        pendingNavigation.current = { index: next, history: writeHistory };
+        prepare(next);
+        return;
+      }
+      const previous = index.current;
+      const direction = next > previous ? 1 : -1;
+      const firstEntry = !entranceCompleted.current.has(next);
+      const outgoing = rail.children[previous] as HTMLElement;
+      const incoming = rail.children[next] as HTMLElement;
+      const outgoingLayers = outgoing.querySelectorAll<HTMLElement>(cinematicLayers);
+      const incomingLayers = incoming.querySelectorAll<HTMLElement>(cinematicLayers);
       tween?.kill();
+      revealTween?.kill();
       if (rail.contains(document.activeElement)) host.focus({ preventScroll: true });
       index.current = next;
       locked = true;
-      setMoving(true);
-      setActive(next);
+      setLifecycles(current => current.map((phase, position) => position === previous ? 'inactive' : position === next ? (firstEntry ? 'entering' : 'returning') : phase));
       setMenuOpen(false);
       if (writeHistory) history.pushState(null, '', `#${chapters[next].id}`);
       const x = -next * host.clientWidth;
-      tween = gsap.timeline({ onComplete: finish });
+      const mark = chapterMark.current!;
+      mark.querySelector<HTMLElement>('.journey__chapter-mark-index')!.textContent = String(next + 1).padStart(2, '0');
+      mark.querySelector<HTMLElement>('.journey__chapter-mark-title')!.textContent = chapters[next].label;
+      // Every adjacent chapter uses the same light snapshot transition. Large jumps
+      // keep the longer rail travel so their direction remains understandable.
+      const lightweightTransition = !reduced && Math.abs(next - previous) === 1;
+      const viewDocument = document as ViewTransitionDocument;
+      if (lightweightTransition && viewDocument.startViewTransition) {
+        document.documentElement.dataset.journeyDirection = direction > 0 ? 'forward' : 'backward';
+        // Freeze live canvases before Chrome captures the old chapter snapshot.
+        flushSync(() => setMoving(true));
+        const transition = viewDocument.startViewTransition(() => {
+          gsap.set(rail, { x, opacity: 1 });
+          flushSync(() => setActive(next));
+        });
+        transition.finished.finally(() => {
+          delete document.documentElement.dataset.journeyDirection;
+          finish();
+          if (firstEntry) revealFirstEntry(next, incoming, direction);
+          else setLifecycles(current => current.map((phase, position) => position === next ? 'active' : phase));
+        });
+        return;
+      }
+      setMoving(true);
+      tween = gsap.timeline({ onComplete: () => {
+        finish();
+        if (firstEntry) revealFirstEntry(next, incoming, direction);
+        else setLifecycles(current => current.map((phase, position) => position === next ? 'active' : phase));
+      } });
       if (reduced) {
         // No lateral camera motion for motion-sensitive visitors.
         tween.to(rail, { opacity: 0, duration: 0.08 }).set(rail, { x })
           .to(rail, { opacity: 1, duration: 0.12 });
       } else {
-        tween.to(rail, { x, duration: 1.15, ease: 'power3.inOut', force3D: true }, 0)
+        const duration = lightweightTransition ? 0.86 : Math.abs(next - previous) > 1 ? 1.58 : 1.42;
+        const stableDepth = next === 2 || next === 3;
+        const stableOutgoingDepth = previous === 2 || previous === 3;
+        if (lightweightTransition) {
+          // Hero, About and Expertise contain large layered scenes. Sliding the entire
+          // seven-viewport rail drops frames on mid-range GPUs, so the directional mist
+          // masks a short scene cut while content keeps a restrained lateral reveal.
+          gsap.set(incoming, { opacity: 0.94, xPercent: 0, scale: 1, clearProps: 'filter,transformOrigin' });
+          gsap.set(energy.current, { opacity: 0 });
+          tween.to(rail, { opacity: 0.16, duration: 0.22, ease: 'power2.in' }, 0)
+            .set(rail, { x }, 0.22)
+            .to(rail, { opacity: 1, duration: 0.4, ease: 'power2.out' }, 0.22)
+            .to(outgoing, { opacity: 0.82, duration: 0.2, ease: 'sine.out' }, 0)
+            .to(incoming, { opacity: 1, duration: 0.36, ease: 'sine.out' }, 0.22)
+            .fromTo(mist.current,
+              { x: direction > 0 ? host.clientWidth * 1.04 : -host.clientWidth * 0.04, opacity: 0 },
+              { x: direction > 0 ? -host.clientWidth * 0.04 : host.clientWidth * 1.04, opacity: 0.52, duration, ease: 'sine.inOut' }, 0)
+            .to(mist.current, { opacity: 0, duration: 0.24, ease: 'sine.out' }, 0.5)
+            .fromTo(mark,
+              { opacity: 0 },
+              { opacity: 0.66, duration: 0.16, ease: 'sine.out' }, 0.18)
+            .to(mark, { opacity: 0, duration: 0.2, ease: 'sine.in' }, 0.46);
+          return;
+        }
+        gsap.set(incoming, { opacity: 0.62, xPercent: direction * (stableDepth ? 2.2 : 3.5), scale: stableDepth ? 1 : 0.965, transformOrigin: direction > 0 ? '0% 50%' : '100% 50%' });
+        gsap.set(energy.current, { opacity: 0, xPercent: direction > 0 ? 115 : -115, scaleX: 0.72 });
+        tween.to(outgoing, { opacity: 0.52, xPercent: direction * -2.2, scale: stableOutgoingDepth ? 1 : 1.035, filter: 'blur(2.1px) brightness(.76)', duration: duration * 0.72, ease: 'power2.in' }, 0)
+          .to(incoming, { opacity: 1, xPercent: 0, scale: 1, filter: 'blur(0px) brightness(1)', duration: duration * 0.74, ease: 'power3.out' }, duration * 0.26)
+          .to(outgoingLayers, { xPercent: direction * -5, scale: 1.025, duration: duration * 0.8, stagger: 0.035, ease: 'power2.inOut' }, 0)
+          .fromTo(incomingLayers,
+            { xPercent: direction * 6, scale: 0.985, filter: 'blur(3px)' },
+            { xPercent: 0, scale: 1, filter: 'blur(0px)', duration: duration * 0.78, stagger: 0.04, ease: 'power3.out' }, duration * 0.2)
+          .to(rail, { x, duration, ease: 'power4.inOut', force3D: true }, 0)
           .fromTo(mist.current,
-            { x: direction > 0 ? host.clientWidth : 0, yPercent: 0.8 },
-            { x: direction > 0 ? 0 : host.clientWidth, yPercent: -0.6, duration: 1.15, ease: 'power3.inOut' }, 0)
+            { x: direction > 0 ? host.clientWidth * 1.08 : -host.clientWidth * 0.08, yPercent: 4, scale: 0.82 },
+            { x: direction > 0 ? -host.clientWidth * 0.08 : host.clientWidth * 1.08, yPercent: -3, scale: 1.16, duration, ease: 'power3.inOut' }, 0)
           .fromTo(mist.current,
             { opacity: 0 },
-            { opacity: 0.68, duration: 0.5, ease: 'sine.inOut' }, 0)
+            { opacity: 0.92, duration: duration * 0.38, ease: 'sine.inOut' }, 0)
           .to(mist.current,
-            { opacity: 0, duration: 0.65, ease: 'sine.inOut' }, 0.5);
+            { opacity: 0, duration: duration * 0.48, ease: 'sine.inOut' }, duration * 0.52)
+          .to(energy.current,
+            { opacity: 0.88, xPercent: direction > 0 ? 12 : -12, scaleX: 1.08, duration: duration * 0.38, ease: 'power2.in' }, duration * 0.12)
+          .to(energy.current,
+            { opacity: 0, xPercent: direction > 0 ? -115 : 115, scaleX: 0.82, duration: duration * 0.45, ease: 'power3.out' }, duration * 0.5);
+        tween.fromTo(mark,
+          { opacity: 0, scale: 0.9, filter: 'blur(8px)' },
+          { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.28, ease: 'power3.out' }, duration * 0.28)
+          .to(mark, { opacity: 0, scale: 1.045, filter: 'blur(5px)', duration: 0.34, ease: 'power2.in' }, duration * 0.62);
       }
     };
     navigate.current = go;
@@ -145,7 +364,7 @@ export function HorizontalJourney({ entered }: { entered: boolean }) {
     window.addEventListener('keydown', key);
     document.addEventListener('click', anchor);
     return () => {
-      tween?.kill(); resize.disconnect();
+      tween?.kill(); revealTween?.kill(); resize.disconnect();
       host.removeEventListener('wheel', wheel); host.removeEventListener('touchstart', start);
       host.removeEventListener('touchmove', move); host.removeEventListener('touchend', end); host.removeEventListener('touchcancel', cancel);
       window.removeEventListener('keydown', key); document.removeEventListener('click', anchor);
@@ -153,15 +372,42 @@ export function HorizontalJourney({ entered }: { entered: boolean }) {
     };
   }, [entered, reduced]);
 
+  useLayoutEffect(() => {
+    if (!entered || !prepared[active] || initialRevealPlayed.current) return;
+    const rail = track.current;
+    const chapter = rail?.children[index.current] as HTMLElement | undefined;
+    if (!chapter) return;
+    initialRevealPlayed.current = true;
+    entranceLocked.current = true;
+    setLifecycles(current => current.map((phase, position) => position === active ? 'entering' : phase));
+    if (reduced) {
+      entranceCompleted.current.add(active);
+      entranceLocked.current = false;
+      setLifecycles(current => current.map((phase, position) => position === active ? 'active' : phase));
+      return;
+    }
+    const timeline = playChapterReveal(chapter, 1, () => {
+      entranceCompleted.current.add(active);
+      entranceLocked.current = false;
+      setLifecycles(current => current.map((phase, position) => position === active ? 'active' : phase));
+      const pending = pendingNavigation.current;
+      if (pending && preparedRef.current[pending.index]) {
+        pendingNavigation.current = null;
+        navigate.current(pending.index, pending.history);
+      }
+    });
+    return () => { timeline.kill(); };
+  }, [active, entered, prepared.join(','), reduced]);
+
   useEffect(() => { if (!entered) setMenuOpen(false); }, [entered]);
   useEffect(() => {
     setActiveSection(entered ? chapters[active].id : null);
   }, [active, entered, setActiveSection]);
   const content: ReactNode[] = [
-    <Hero entered={entered} chapterActive={active === 0} prepared={active <= 1} />,
-    <About active={active === 1 && entered} />,
-    <Expertise active={active === 2 && entered} prepared={entered && Math.abs(active - 2) <= 1} />,
-    <Skills active={active === 3 && entered} prepared={entered && Math.abs(active - 3) <= 1} />,
+    <Hero entered={entered} chapterActive={active === 0 && !moving} prepared={requested.has(0)} onSceneReady={markHeroSceneReady} />,
+    <About active={active === 1 && entered && !moving} />,
+    <Expertise active={active === 2 && entered && !moving} prepared={requested.has(2)} onSceneReady={markExpertiseSceneReady} />,
+    <Skills active={active === 3 && entered && !moving} prepared={requested.has(3)} onSceneReady={markSkillsSceneReady} />,
     <Focus />, <Projects />, <Connect />,
   ];
   return <div className="journey" data-active-chapter={chapters[active].id} data-moving={moving} data-reduced-motion={reduced}>
@@ -176,13 +422,17 @@ export function HorizontalJourney({ entered }: { entered: boolean }) {
     </header>
     <main ref={viewport} id="main-content" className="journey__viewport" tabIndex={-1} aria-label="Hành trình portfolio" inert={!entered}>
       <div ref={track} className="journey__track">
-        {chapters.map((chapter, i) => <div key={chapter.id} className={`journey__chapter journey__chapter--${chapter.id}`} inert={i !== active} aria-hidden={i !== active} data-phase={i === active ? 'active' : Math.abs(i - active) === 1 ? 'nearby' : 'paused'}>
+        {chapters.map((chapter, i) => <div key={chapter.id} className={`journey__chapter journey__chapter--${chapter.id}`} inert={i !== active} aria-hidden={i !== active} data-phase={i === active ? 'active' : Math.abs(i - active) === 1 ? 'nearby' : 'paused'} data-lifecycle={lifecycles[i]} data-prepared={prepared[i]}>
           {content[i]}
         </div>)}
       </div>
+      <div className="journey__temple-atmosphere" aria-hidden="true">{[0, 1, 2, 3, 4, 5, 6].map(mote => <i key={mote} style={{ '--mote': mote } as React.CSSProperties} />)}</div>
       <div ref={mist} className="journey__mist protected-artwork" aria-hidden="true">
         <img draggable="false" src={heroAssets.fog} alt="" />
+        <img draggable="false" src={heroAssets.fog} alt="" />
       </div>
+      <div ref={energy} className="journey__energy" aria-hidden="true"><span /><span /><span /></div>
+      <div ref={chapterMark} className="journey__chapter-mark" aria-hidden="true"><span className="journey__chapter-mark-index">01</span><strong className="journey__chapter-mark-title">Nhập cảnh</strong><i /></div>
     </main>
     <footer className="journey__footer" inert={!entered}>
       <button onClick={() => navigate.current(active - 1)} disabled={active === 0 || moving} aria-label="Chương trước">←</button>

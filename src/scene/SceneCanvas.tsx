@@ -3,11 +3,11 @@ import { Canvas, type RootState } from '@react-three/fiber';
 import { HeroWorld } from './environment/HeroWorld';
 import type { HeroSceneProps } from '../types/hero';
 
-export default function SceneCanvas({ active, mobile, motion }: HeroSceneProps) {
+export default function SceneCanvas({ active, mobile, motion, onReady }: HeroSceneProps) {
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
   const [lost, setLost] = useState(false);
   const [painted, setPainted] = useState(false);
-  const reveal = useCallback(() => setPainted(true), []);
+  const reveal = useCallback(() => { setPainted(true); onReady?.(); }, [onReady]);
   const onCreated = useCallback(({ gl }: RootState) => {
     gl.setClearColor(0x000000, 0);
     gl.domElement.dataset.initialized = 'true';

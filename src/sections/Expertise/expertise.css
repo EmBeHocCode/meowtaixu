@@ -29,10 +29,11 @@
 }
 
 .expertise__veil { z-index: 5; pointer-events: none; background: #06101a; opacity: 0; }
-.expertise__scene { z-index: -3; pointer-events: none; }
+.expertise__scene { z-index: -3; opacity: 0; pointer-events: none; transition: opacity 900ms cubic-bezier(.22, .75, .25, 1); }
+.expertise[data-scene-ready='true']:not([data-reduced-motion='true']) .expertise__scene { opacity: 1; }
 .expertise__scene > div, .expertise__scene canvas { width: 100% !important; height: 100% !important; }
 
-.expertise__static-artifacts { z-index: -3; transition: opacity 500ms ease; }
+.expertise__static-artifacts { z-index: -3; transition: opacity 900ms cubic-bezier(.22, .75, .25, 1); }
 .expertise[data-scene-ready='true']:not([data-reduced-motion='true']) .expertise__static-artifacts { opacity: 0; }
 .expertise__static-artifacts img { position: absolute; display: block; object-fit: contain; opacity: 0.58; filter: saturate(0.75) brightness(0.82) drop-shadow(0 20px 26px rgb(0 0 0 / 46%)); transition: opacity 360ms ease, filter 360ms ease, transform 500ms ease; }
 .expertise__static-artifacts img[data-selected='true'] { z-index: 5; opacity: 1; filter: saturate(1.08) brightness(1.14) drop-shadow(0 0 13px rgb(222 191 119 / 42%)) drop-shadow(0 22px 34px rgb(0 0 0 / 62%)); transform: translateY(-6px) scale(1.07); }
@@ -85,6 +86,9 @@
 .expertise__annotation p { margin: 0; color: #ced3d2; font-size: var(--type-secondary); line-height: 1.65; }
 .expertise__annotation p[lang='en'] { color: #99a6ab; font-size: var(--type-label); letter-spacing: 0.06em; }
 .expertise__annotation-copy > div { width: 3.5rem; height: 1px; margin: 0.75rem 0; background: linear-gradient(90deg, #a88d59, transparent); }
+.expertise__annotation-description { min-height: 5.1em; }
+.expertise__ink-cursor { display: inline-block; width: .34em; height: 1.05em; margin-left: .12em; translate: 0 .18em; border-radius: 45% 55% 48% 52%; background: #e8c77e; box-shadow: 0 0 8px rgb(231 198 125 / 72%), 0 0 18px rgb(135 180 159 / 28%); animation: expertise-ink-pulse .72s ease-in-out infinite alternate; }
+@keyframes expertise-ink-pulse { to { opacity: .34; box-shadow: 0 0 3px rgb(231 198 125 / 30%); } }
 
 @media (max-width: 1024px) {
   .expertise__content { width: min(40vw, 31rem); left: 5%; }
@@ -119,6 +123,7 @@
   .expertise__annotation-index, .expertise__annotation p[lang='en'], .expertise__annotation-copy > div { display: none; }
   .expertise__annotation h3 { margin: 0 0 0.2rem; font-size: 0.9rem; }
   .expertise__annotation p { font-size: 0.76rem; line-height: 1.45; }
+  .expertise__annotation-description { min-height: 4.35em; }
 }
 
 @media (max-height: 700px) and (min-width: 768px) {
@@ -128,7 +133,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .expertise__scene,
+  .expertise__static-artifacts { transition: none; }
   .expertise__static-artifacts img,
   .expertise__path { transition: none; }
   .expertise__path:hover .expertise__path-label, .expertise__path:focus-visible .expertise__path-label, .expertise__path[aria-pressed='true'] .expertise__path-label { transform: none; }
+  .expertise__ink-cursor { display: none; }
 }

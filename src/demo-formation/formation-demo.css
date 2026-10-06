@@ -1,0 +1,38 @@
+:root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #ece5d4; background: #03080e; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; overflow: hidden; }
+button, input { font: inherit; }
+.formation-demo { position: relative; width: 100vw; height: 100svh; overflow: hidden; isolation: isolate; background: #03080e; }
+.formation-demo__backdrop { position: absolute; inset: 0; z-index: -2; background: linear-gradient(90deg, rgb(2 7 12 / 94%) 0%, rgb(3 8 14 / 56%) 48%, rgb(2 7 12 / 78%) 100%), url('/assets/xianxia/background/hero-mountains-far.webp') center / cover; filter: saturate(0.55) brightness(0.38); transform: scale(1.04); }
+.formation-demo::after { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: radial-gradient(circle at 50% 52%, transparent 18%, rgb(2 6 10 / 18%) 58%, rgb(2 6 10 / 72%) 100%); }
+.formation-demo__canvas { position: absolute; inset: 0; z-index: 1; }
+.formation-demo__title { position: absolute; z-index: 4; top: 4.5vh; left: 4.5vw; pointer-events: none; text-shadow: 0 2px 20px #02060a; }
+.formation-demo__title p { margin: 0 0 0.75rem; color: #b7a270; font-size: 0.65rem; letter-spacing: 0.22em; }
+.formation-demo__title h1 { margin: 0; font: 400 clamp(1.8rem, 3vw, 3.5rem)/1.05 Georgia, serif; letter-spacing: -0.035em; }
+.formation-demo__title span { display: block; margin-top: 0.8rem; color: #9caeb3; font-size: 0.72rem; letter-spacing: 0.08em; }
+.formation-panel { position: absolute; z-index: 5; top: 3vh; right: 2.5vw; width: min(310px, calc(100vw - 2rem)); max-height: 94vh; overflow: auto; padding: 1rem; border: 1px solid rgb(183 162 112 / 42%); background: rgb(3 9 15 / 88%); box-shadow: 0 20px 60px rgb(0 0 0 / 38%); backdrop-filter: blur(12px); }
+.formation-panel__heading { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 0.8rem; color: #d9c493; font-size: 0.66rem; letter-spacing: 0.13em; }
+.formation-panel__heading span { color: #83aaa6; }
+.formation-panel__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+.formation-panel button { min-height: 38px; border: 1px solid rgb(183 162 112 / 35%); border-radius: 0; color: #ded5c1; background: rgb(18 28 34 / 68%); cursor: pointer; }
+.formation-panel button:hover, .formation-panel button:focus-visible { border-color: #c7ac72; color: #fff0cf; outline: none; }
+.formation-panel__slider { display: grid; grid-template-columns: 1fr auto; gap: 0.1rem 0.8rem; margin-top: 0.65rem; color: #b8c0bd; font-size: 0.72rem; }
+.formation-panel__slider output { color: #d3bd88; font-variant-numeric: tabular-nums; }
+.formation-panel__slider input { grid-column: 1 / -1; width: 100%; accent-color: #9fae8b; }
+.formation-panel fieldset { margin: 0.9rem 0 0; padding: 0.65rem; border: 1px solid rgb(143 163 159 / 25%); }
+.formation-panel legend { padding: 0 0.4rem; color: #aebbb7; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; }
+.formation-panel__layers { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem; }
+.formation-panel__layers label { color: #b7bfbd; font-size: 0.7rem; text-transform: capitalize; }
+.formation-panel__layers input { margin-right: 0.4rem; accent-color: #b7a270; }
+.formation-panel__telemetry { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem 0.8rem; margin: 0.85rem 0 0; font-size: 0.68rem; }
+.formation-panel__telemetry div { display: flex; justify-content: space-between; gap: 0.5rem; border-bottom: 1px solid rgb(255 255 255 / 7%); }
+.formation-panel__telemetry dt { color: #7f9296; }.formation-panel__telemetry dd { margin: 0; color: #cfc3a5; }
+.formation-demo__note { position: absolute; z-index: 4; left: 4.5vw; bottom: 2.2vh; margin: 0; color: #6f8086; font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; }
+@media (max-width: 760px) {
+  .formation-demo__title { top: 2.2vh; left: 5vw; }
+  .formation-demo__title span { display: none; }
+  .formation-panel { top: auto; right: 1rem; bottom: 1rem; left: 1rem; width: auto; max-height: 43vh; }
+  .formation-panel__slider { margin-top: 0.45rem; }
+  .formation-demo__note { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .formation-demo__canvas { opacity: 0.92; } }

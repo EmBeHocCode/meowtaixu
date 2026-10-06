@@ -98,14 +98,10 @@ function LandscapeLayer({ url, z, motion, opacity = 1, color = '#ffffff', fog = 
   </mesh>;
 }
 
-type OverlayKind = 'sky' | 'vegetation';
-
-function AnimatedOverlay({ url, z, kind, active, mobile }: {
+function AnimatedOverlay({ url, z, active }: {
   url: string;
   z: number;
-  kind: OverlayKind;
   active: boolean;
-  mobile: boolean;
 }) {
   const environment = useEnvironment();
   const texture = useTexture(url);
@@ -123,28 +119,15 @@ function AnimatedOverlay({ url, z, kind, active, mobile }: {
   useFrame((_state, delta) => {
     if (!active || !mesh.current || !material.current) return;
     time.current += Math.min(delta, 0.08);
-    if (kind === 'sky') {
-      // Reveal the first distant pulse quickly, then repeat on a calm 7.2 s cadence.
-      const phase = time.current % 7.2;
-      const pulse = Math.exp(-Math.pow((phase - 1.45) / 0.54, 2));
-      const afterglow = Math.exp(-Math.pow((phase - 2.25) / 0.42, 2)) * 0.42;
-      const weatherLight = 0.018 + environment.values.cloud * 0.035 + environment.values.lightning * 0.2;
-      (material.current as MeshBasicMaterial).opacity = Math.min(mobile ? 0.14 : 0.26, (pulse + afterglow) * weatherLight + environment.thunderPulse * 0.12);
-    } else {
-      const shader = material.current as ShaderMaterial;
-      shader.uniforms.uTime.value = time.current;
-      shader.uniforms.uWind.value = environment.values.wind;
-      shader.uniforms.uRain.value = environment.values.rain;
-    }
+    const shader = material.current as ShaderMaterial;
+    shader.uniforms.uTime.value = time.current;
+    shader.uniforms.uWind.value = environment.values.wind;
+    shader.uniforms.uRain.value = environment.values.rain;
   });
 
-  return <mesh ref={mesh} position={[0, 0, z]} renderOrder={kind === 'sky' ? 5 : 13}>
-    <planeGeometry args={[planeWidth, planeHeight, kind === 'vegetation' ? 24 : 1, kind === 'vegetation' ? 12 : 1]} />
-    {kind === 'sky' ? <meshBasicMaterial
-      ref={material as Ref<MeshBasicMaterial>}
-      map={texture} transparent depthWrite={false} toneMapped={false} opacity={0}
-      blending={AdditiveBlending}
-    /> : <shaderMaterial
+  return <mesh ref={mesh} position={[0, 0, z]} renderOrder={13}>
+    <planeGeometry args={[planeWidth, planeHeight, 24, 12]} />
+    <shaderMaterial
       ref={material as Ref<ShaderMaterial>}
       transparent depthWrite={false} toneMapped={false}
       uniforms={{ uMap: { value: texture }, uTime: { value: 0 }, uOpacity: { value: 0.78 }, uWind: { value: 0.1 }, uRain: { value: 0 } }}
@@ -174,7 +157,64 @@ function AnimatedOverlay({ url, z, kind, active, mobile }: {
           gl_FragColor = vec4(wetColor, texel.a * uOpacity);
         }
       `}
-    />}
+    />
+  </mesh>;
+}
+
+function StormIllumination({ active, mobile }: { active: boolean; mobile: boolean }) {
+  const environment = useEnvironment();
+  const material = useRef<ShaderMaterial>(null);
+  const time = useRef(0);
+  const { viewport } = useThree();
+
+  useFrame((_state, delta) => {
+    if (!active || !material.current) return;
+    time.current += Math.min(delta, 0.08);
+    const phase = time.current % 8.6;
+    const firstFlash = Math.exp(-Math.pow((phase - 1.35) / 0.11, 2));
+    const echoFlash = Math.exp(-Math.pow((phase - 1.72) / 0.2, 2)) * 0.48;
+    const stormStrength = 0.025 + environment.values.cloud * 0.025 + environment.values.lightning * 0.11;
+    material.current.uniforms.uTime.value = time.current;
+    material.current.uniforms.uIntensity.value = Math.min(
+      mobile ? 0.18 : 0.28,
+      (firstFlash + echoFlash) * stormStrength + environment.thunderPulse * (mobile ? 0.16 : 0.22),
+    );
+  });
+
+  return <mesh position={[viewport.width * 0.08, viewport.height * 0.12, -5.9]} renderOrder={5}>
+    <planeGeometry args={[viewport.width * 1.34, viewport.height * 1.2]} />
+    <shaderMaterial
+      ref={material}
+      transparent
+      depthWrite={false}
+      toneMapped={false}
+      blending={AdditiveBlending}
+      uniforms={{ uTime: { value: 0 }, uIntensity: { value: 0 } }}
+      vertexShader={`
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `}
+      fragmentShader={`
+        varying vec2 vUv;
+        uniform float uTime;
+        uniform float uIntensity;
+        void main() {
+          vec2 centered = vUv - vec2(.68, .67);
+          float broadCloud = exp(-dot(centered * vec2(1.25, 1.7), centered * vec2(1.25, 1.7)) * 4.2);
+          vec2 crown = vUv - vec2(.58, .84);
+          float crownLight = exp(-dot(crown * vec2(1.6, 2.5), crown * vec2(1.6, 2.5)) * 5.0);
+          float cloudBreakup = .72 + .15 * sin(vUv.x * 13.0 + uTime * .16) + .13 * sin(vUv.y * 17.0 - vUv.x * 6.0);
+          float featherX = smoothstep(0.0, .2, vUv.x) * smoothstep(0.0, .2, 1.0 - vUv.x);
+          float featherY = smoothstep(0.0, .18, vUv.y) * smoothstep(0.0, .18, 1.0 - vUv.y);
+          float lightShape = max(broadCloud, crownLight * .72) * clamp(cloudBreakup, .38, 1.0);
+          float alpha = uIntensity * lightShape * featherX * featherY;
+          gl_FragColor = vec4(.67, .79, .86, alpha);
+        }
+      `}
+    />
   </mesh>;
 }
 
@@ -312,7 +352,6 @@ export function HeroWorld({ active, mobile, motion, onReady }: HeroSceneProps & 
     heroAssets.near,
     heroAssets.moon,
     heroAssets.fog,
-    heroAssets.skyPulse,
     ...(!mobile ? [heroAssets.bambooTips, heroAssets.birdFlightSprite] : []),
   ]);
   const gl = useThree(state => state.gl);
@@ -325,7 +364,7 @@ export function HeroWorld({ active, mobile, motion, onReady }: HeroSceneProps & 
     <FrameBudget active={active} mobile={mobile} />
     <HeroCameraRig motion={motion} mobile={mobile} />
     <LandscapeLayer url={mobile ? heroAssets.mobileFar : heroAssets.far} z={-6} mobile={mobile} motion={motion} color="#bcc7d0" align={mobile ? 0.62 : 0.5} />
-    <AnimatedOverlay url={heroAssets.skyPulse} z={-5.9} kind="sky" active={active} mobile={mobile} />
+    <StormIllumination active={active} mobile={mobile} />
     <LandscapeLayer url={heroAssets.fog} z={-5.55} mobile={mobile} motion={motion} opacity={mobile ? 0.018 : 0.025} fog={3} />
     <Moon mobile={mobile} />
     <LandscapeLayer url={heroAssets.mid} z={-1} mobile={mobile} motion={motion} color="#b5c1cd" align={mobile ? 0.94 : 0.5} />
@@ -333,7 +372,7 @@ export function HeroWorld({ active, mobile, motion, onReady }: HeroSceneProps & 
     <LandscapeLayer url={heroAssets.fog} z={0} mobile={mobile} motion={motion} opacity={mobile ? 0.12 : 0.2} fog={1} />
     <LandscapeLayer url={heroAssets.near} z={1.5} mobile={mobile} motion={motion} color="#889aa8" align={mobile ? 0.72 : 0.5} />
     {!mobile && <LandscapeLayer url={heroAssets.fog} z={2} mobile={mobile} motion={motion} opacity={0.09} fog={2} />}
-    {!mobile && <AnimatedOverlay url={heroAssets.bambooTips} z={2.2} kind="vegetation" active={active} mobile={mobile} />}
+    {!mobile && <AnimatedOverlay url={heroAssets.bambooTips} z={2.2} active={active} />}
     <SpiritMotes mobile={mobile} />
     <WeatherEffects active={active} mobile={mobile} />
   </>;

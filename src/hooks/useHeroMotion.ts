@@ -28,8 +28,15 @@ export function useHeroMotion(host: RefObject<HTMLElement | null>, reduced: bool
       const rect = element.getBoundingClientRect();
       motion.current.x = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
       motion.current.y = -((event.clientY - rect.top) / rect.height - 0.5) * 2;
+      element.style.setProperty('--hero-pointer-x', motion.current.x.toFixed(3));
+      element.style.setProperty('--hero-pointer-y', motion.current.y.toFixed(3));
     };
-    const reset = () => { motion.current.x = 0; motion.current.y = 0; };
+    const reset = () => {
+      motion.current.x = 0;
+      motion.current.y = 0;
+      element.style.setProperty('--hero-pointer-x', '0');
+      element.style.setProperty('--hero-pointer-y', '0');
+    };
     const scroll = () => {
       const rect = element.getBoundingClientRect();
       motion.current.scroll = Math.min(1, Math.max(0, -rect.top / rect.height));
@@ -42,6 +49,8 @@ export function useHeroMotion(host: RefObject<HTMLElement | null>, reduced: bool
       element.removeEventListener('pointermove', pointer);
       element.removeEventListener('pointerleave', reset);
       window.removeEventListener('scroll', scroll);
+      element.style.removeProperty('--hero-pointer-x');
+      element.style.removeProperty('--hero-pointer-y');
       motion.current = { x: 0, y: 0, scroll: 0 };
     };
   }, [host, reduced]);

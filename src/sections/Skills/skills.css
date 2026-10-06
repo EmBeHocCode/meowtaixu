@@ -23,7 +23,12 @@
 .skills__frame-fx { position: absolute; z-index: 2; width: 256px; height: 256px; background-size: 400% 400%; background-repeat: no-repeat; opacity: .36; filter: blur(.2px); animation: skills-frame-sequence-16 1.6s steps(1) infinite; }
 .skills__frame-fx--formation { left: 51%; top: 38%; background-image: url('/assets/xianxia/techniques/formation-mist-16f.webp'); transform: scale(2.25); mix-blend-mode: screen; }
 .skills__frame-fx--talisman { right: 4%; top: 12%; z-index: 3; background-image: url('/assets/xianxia/techniques/talisman-flutter-16f.webp'); animation-duration: 1.28s; transform: scale(1.1); }
-.skills__scene { z-index: -2; pointer-events: none; }
+.skills__scene { z-index: -2; opacity: 0; pointer-events: none; transition: opacity 900ms cubic-bezier(.22, .75, .25, 1); }
+.skills[data-scene-ready='true']:not([data-reduced-motion='true']) .skills__scene { opacity: 1; }
+.skills[data-active='false'] .skills__environment-far,
+.skills[data-active='false'] .skills__environment-near,
+.skills[data-active='false'] .skills__frame-fx,
+.skills[data-active='false'] .skills__weather { animation-play-state: paused; }
 .skills__scene canvas { display: block; width: 100%; height: 100%; }
 
 .skills__fallback {
@@ -44,6 +49,8 @@
   translate: -50% -50%;
 }
 .skills__fallback::after { width: min(31vw, 24rem); rotate: 30deg; border-color: rgb(190 158 93 / 14%); }
+.skills__fallback::before,
+.skills__fallback::after { transition: opacity 900ms cubic-bezier(.22, .75, .25, 1); }
 .skills__fallback i { position: absolute; bottom: -10%; width: 36%; height: 36%; background: rgb(4 8 10 / 76%); filter: blur(18px); rotate: -8deg; }
 .skills__fallback i:nth-child(2) { left: 31%; bottom: -17%; rotate: 5deg; }
 .skills__fallback i:nth-child(3) { right: -4%; bottom: -8%; rotate: -12deg; }
@@ -92,9 +99,10 @@
   cursor: pointer;
   pointer-events: auto;
   transform: perspective(700px) rotateY(-5deg) translateZ(0);
-  transition: transform .35s ease, border-color .35s ease, background .35s ease, box-shadow .35s ease;
+  transition: transform 420ms cubic-bezier(.22, .75, .25, 1), border-color 260ms ease, background 260ms ease, box-shadow 320ms ease;
+  will-change: transform;
 }
-.skills__artifact::before { content: ''; position: absolute; z-index: -1; inset: 16% 8%; border-radius: 50%; background: radial-gradient(ellipse, rgb(195 158 84 / 25%), rgb(86 132 109 / 10%) 43%, transparent 72%); opacity: 0; filter: blur(10px); transition: opacity .35s ease; pointer-events: none; }
+.skills__artifact::before { content: ''; position: absolute; z-index: -1; inset: 16% 8%; border-radius: 50%; background: radial-gradient(ellipse, rgb(195 158 84 / 25%), rgb(86 132 109 / 10%) 43%, transparent 72%); opacity: 0; filter: blur(10px); transition: opacity 320ms ease; pointer-events: none; }
 .skills__artifact:nth-child(1) { left: 3%; top: 22%; rotate: -3deg; }
 .skills__artifact:nth-child(2) { left: 25%; top: 2%; rotate: 2deg; }
 .skills__artifact:nth-child(3) { left: 42%; top: 30%; rotate: -1deg; }
@@ -102,16 +110,16 @@
 .skills__artifact:nth-child(5) { left: 20%; top: 61%; rotate: -2deg; }
 .skills__artifact:nth-child(6) { left: 66%; top: 59%; rotate: 2deg; }
 .skills__artifact[data-prominence='primary'] { width: clamp(10rem, 14vw, 14rem); min-height: 11rem; }
-.skills__artifact:is(:hover, :focus-visible, [aria-pressed='true']) { outline: none; transform: perspective(700px) rotateY(0) translate3d(0, -7px, 24px); }
+.skills__artifact:is(:hover, :focus-visible, [aria-pressed='true']) { outline: none; transform: perspective(700px) rotateY(0) translate3d(0, -4px, 16px); }
 .skills__artifact:is(:hover, :focus-visible, [aria-pressed='true'])::before { opacity: 1; }
 .skills__artifact:focus-visible::after { content: ''; position: absolute; inset: 4%; border: 2px solid rgb(225 200 144 / 72%); border-radius: 45%; }
-.skills__artifact-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; filter: brightness(.72) saturate(.78) drop-shadow(0 12px 16px rgb(0 0 0 / 55%)); transition: filter .35s ease, transform .35s ease; }
+.skills__artifact-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; filter: brightness(.72) saturate(.78) drop-shadow(0 12px 16px rgb(0 0 0 / 55%)); transition: filter 360ms ease, transform 420ms cubic-bezier(.22, .75, .25, 1); will-change: transform; }
 .skills__artifact:is(:hover, :focus-visible, [aria-pressed='true']) .skills__artifact-art { filter: brightness(1.14) saturate(1.02) drop-shadow(0 0 12px rgb(205 172 102 / 38%)) drop-shadow(0 15px 20px rgb(0 0 0 / 58%)); transform: scale(1.055); }
 .skills__artifact-glyph { position: absolute; z-index: 2; right: .55rem; top: .25rem; color: rgb(196 220 202 / 28%); font-family: var(--font-chinese); font-size: 2rem; line-height: 1; text-shadow: 0 2px 8px #02070b; }
 .skills__artifact-copy { position: absolute; z-index: 3; right: 2%; bottom: -1rem; left: 2%; display: grid; gap: .1rem; padding: .52rem .62rem; background: linear-gradient(90deg, transparent, rgb(4 10 13 / 88%) 18% 82%, transparent); text-align: center; text-shadow: 0 2px 6px #000; }
 .skills__artifact-copy small { color: rgb(211 190 142 / 65%); font-size: .52rem; letter-spacing: .16em; text-transform: uppercase; }
 .skills__artifact-copy strong { font-family: 'Noto Serif Display', serif; font-size: clamp(1rem, 1.35vw, 1.3rem); font-weight: 500; }
-.skills__artifact-copy em { overflow: hidden; max-height: 0; opacity: 0; color: rgb(239 237 225 / 78%); font-size: .64rem; font-style: normal; line-height: 1.4; transition: max-height .35s ease, opacity .35s ease, margin .35s ease; }
+.skills__artifact-copy em { overflow: hidden; max-height: 0; opacity: 0; color: rgb(239 237 225 / 78%); font-size: .64rem; font-style: normal; line-height: 1.4; transition: max-height 360ms ease, opacity 280ms ease, margin 360ms ease; }
 .skills__artifact:is(:hover, :focus-visible, [aria-pressed='true']) .skills__artifact-copy em { max-height: 3rem; margin-top: .28rem; opacity: 1; }
 
 .skills__mastery { position: absolute; z-index: 4; right: clamp(1.4rem, 4vw, 4.5rem); bottom: clamp(2.4rem, 8vh, 5rem); width: min(24rem, 27vw); padding-left: 1rem; border-left: 1px solid rgb(185 159 102 / 24%); }
@@ -177,6 +185,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .skills__scene,
+  .skills__fallback::before,
+  .skills__fallback::after { transition: none; }
   .skills__weather { animation: none; }
   .skills__environment-far, .skills__environment-near, .skills__frame-fx { animation: none; }
   .skills__artifact,

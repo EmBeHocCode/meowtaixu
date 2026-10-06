@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { AdditiveBlending, BufferAttribute, BufferGeometry, MeshBasicMaterial, ShaderMaterial } from 'three';
+import { AdditiveBlending, BufferAttribute, BufferGeometry, ShaderMaterial } from 'three';
 import { useEnvironment } from '../../../features/environment';
 
 function seeded(index: number, salt: number) {
@@ -271,25 +271,10 @@ function SurfaceRainResponse({ active, mobile }: { active: boolean; mobile: bool
   </>;
 }
 
-function ThunderPulse({ active, mobile }: { active: boolean; mobile: boolean }) {
-  const { thunderPulse } = useEnvironment();
-  const material = useRef<MeshBasicMaterial>(null);
-  const { viewport } = useThree();
-  useFrame(() => {
-    if (!active || !material.current) return;
-    material.current.opacity = thunderPulse * (mobile ? 0.08 : 0.13);
-  });
-  return <mesh position={[viewport.width * 0.18, viewport.height * 0.16, 3.2]} renderOrder={17}>
-    <planeGeometry args={[viewport.width * 0.95, viewport.height * 0.72]} />
-    <meshBasicMaterial ref={material} color="#c9e0ed" transparent opacity={0} depthWrite={false} blending={AdditiveBlending} />
-  </mesh>;
-}
-
 export function WeatherEffects({ active, mobile }: { active: boolean; mobile: boolean }) {
   return <>
     <SurfaceRainResponse active={active} mobile={mobile} />
     <RainSystem active={active} mobile={mobile} />
     <RainImpacts active={active} mobile={mobile} />
-    <ThunderPulse active={active} mobile={mobile} />
   </>;
 }

@@ -48,7 +48,7 @@ The original Hero painting and composition remain unchanged. Small transparent d
 
 | Exact project-relative path | Origin / bytes | Actual use |
 | --- | --- | --- |
-| `public/assets/xianxia/vfx/hero-sky-tribulation-glow.webp` | Local transparent derivative of the approved far Hero painting; 34,382 bytes | Localized upper-sky pulse at a deterministic 7.2-second interval; additive opacity remains restrained but visibly readable |
+| `public/assets/xianxia/vfx/hero-sky-tribulation-glow.webp` | Retained legacy derivative; no longer loaded at runtime | Replaced by an edge-feathered procedural storm illumination to avoid visible rectangular bounds |
 | `public/assets/xianxia/environment/hero-bamboo-tips.webp` | Local transparent derivative of the approved near bamboo layer; 54,572 bytes | Desktop-only minute sway of bamboo tips without moving the foreground rocks |
 | `public/assets/xianxia/vfx/hero-distant-spirit-birds.png` | Earlier built-in ImageGen transparent master; 100,034 bytes | Retired source retained for provenance; no longer requested at runtime because it cannot supply true wing motion |
 | `public/assets/xianxia/vfx/hero-distant-spirit-birds.webp` | Earlier optimized still derivative; 7,210 bytes | Retired runtime asset retained for provenance; no longer referenced by the Hero |
@@ -143,5 +143,20 @@ Read-only source root: `E:\bio.mieowparadise.io.vn\public_html`.
 | `assets/site3d-bg/` | Existing Meow Astral Core demo | Preserve concept/project link, not compiled bundle architecture. |
 | `assets/security-lab/` | Existing client-side educational demo | Potential future Projects item; no automatic migration. |
 | `assets/mouse-cursor/`, project screenshots, archive files | Reference only | Not required for foundation; do not copy backup/archive material. |
+
+## Demo formation asset system — 2026-10-06
+
+This isolated `/demo-formation/` prototype is not connected to the production Công pháp section or main navigation. Built-in ImageGen supplied separate transparent artwork; Three.js uses planes only as texture carriers for the visible formation design. PNG masters remain beside optimized lossless WebP runtime derivatives.
+
+| Runtime family | Dimensions | Role |
+| --- | --- | --- |
+| `public/assets/xianxia/demo-formation/rings/{outer,secondary,inner,tilted,upper}/*.webp` | 1024 × 1024 each | Five independent authored formation layers with separate rotation, height and tilt |
+| `public/assets/xianxia/demo-formation/runes/rune-glyph-band.webp` | 1024 × 1024 | Independent decorative abstract seal-glyph band |
+| `public/assets/xianxia/demo-formation/nodes/orbit-seals-8.webp` | 1024 × 512, 8 cells | Eight distinct orbiting seal/node sprites |
+| `public/assets/xianxia/demo-formation/runes/vertical-rune-chains-8.webp` | 1024 × 512, 8 cells | Eight distinct hanging rune-chain/light-pillar sprites |
+| `public/assets/xianxia/demo-formation/{core,flames,activation}/**/*-8f.webp` | 1024 × 512, 8 frames each | Genuine shape-changing core, spirit-flame and activation-discharge sequences |
+| `public/assets/xianxia/demo-formation/{energy,mist}/**/*.webp` | 1024 × 512, 8 frames each | Re-normalized energy ribbon, rune glow and spiritual mist sequences |
+
+All atlases use a 4 × 2 layout with 256 × 256 cells, left-to-right then top-to-bottom. The preparation helper `scripts/prepare-formation-demo-assets.py` normalizes anchors, adds cell padding, cleans near-zero alpha and prints adjacent-frame difference measurements. Final prompts requested transparent premium Chinese xianxia artifacts in antique gold, ivory, moonlit silver and muted jade, with no readable text, red cyberpunk, neon HUD styling, black rectangles, cropped glow, watermark or chroma fringe.
 
 Production references `assets/tichtuyetavt.webp` for preload, but that file was absent from the inspected asset listing. Its `<picture>` also declares `happy1.png` as `image/webp`; verify actual media type during any future migration rather than copying that markup.

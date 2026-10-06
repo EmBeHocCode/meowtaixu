@@ -111,7 +111,7 @@ test('Công pháp presents six technique relics and honest practical states', ()
   assert.match(css, /skills-frame-sequence/);
   assert.match(css, /formation-mist-16f\.webp/);
   assert.match(css, /talisman-flutter-16f\.webp/);
-  assert.match(journey, /<Skills active=\{active === 3 && entered\} prepared=/);
+  assert.match(journey, /<Skills active=\{active === 3 && entered && !moving\} prepared=/);
 });
 
 test('Công pháp runtime artwork is optimized layered WebP with two sixteen-frame sheets', () => {
@@ -148,7 +148,7 @@ test('Sở tu presents four accessible cultivation disciplines without a card gr
   assert.match(section, /data-chapter-scroll/);
   assert.doesNotMatch(css, /grid-template-columns:\s*repeat\(2/);
   assert.match(css, /Each transparent button covers its relic/);
-  assert.match(journey, /<Expertise active=\{active === 2 && entered\} prepared=/);
+  assert.match(journey, /<Expertise active=\{active === 2 && entered && !moving\} prepared=/);
   assert.doesNotMatch(css, /-webkit-line-clamp/);
 });
 
@@ -207,6 +207,28 @@ test('required handoff documents exist and are nonempty', () => {
   }
 });
 
+test('chapter motion, resumable writing and technique pointer remain coordinated', () => {
+  const journey = readFileSync(at('src/components/navigation/HorizontalJourney.tsx'), 'utf8');
+  const hero = readFileSync(at('src/sections/Hero/Hero.tsx'), 'utf8');
+  const about = readFileSync(at('src/sections/About/About.tsx'), 'utf8');
+  const expertise = readFileSync(at('src/sections/Expertise/Expertise.tsx'), 'utf8');
+  const techniques = readFileSync(at('src/scene/techniques/TechniquesWorld.tsx'), 'utf8');
+  const lifecycle = readFileSync(at('src/components/navigation/chapter-lifecycle.ts'), 'utf8');
+  assert.match(journey, /Math\.abs\(next - previous\) === 1/);
+  assert.match(journey, /entranceCompleted\.current\.has\(next\)/);
+  assert.match(journey, /revealFirstEntry\(next, incoming, direction\)/);
+  assert.match(journey, /pendingNavigation\.current/);
+  assert.match(lifecycle, /preloadChapterAssets/);
+  assert.match(lifecycle, /'unloaded' \| 'preloading' \| 'prepared' \| 'entering' \| 'active' \| 'inactive' \| 'returning'/);
+  assert.match(hero, /hero__title-volume/);
+  assert.match(hero, /hero__poem-script/);
+  assert.match(about, /autoOpened\.current = true;\s*setOpen\(true\)/);
+  assert.match(about, /userHasChangedDossierState\.current = true/);
+  assert.match(expertise, /written\.current\[discipline\.id\]/);
+  assert.match(expertise, /if \(!active \|\| reducedMotion/);
+  assert.match(techniques, /artifactPointerAngles\[selected\]/);
+});
+
 test('approved section baselines, global styling and preloader remain intact', () => {
   const baseline = JSON.parse(readFileSync(at('tests/hero-preservation.json'), 'utf8'));
   for (const [file, hash] of Object.entries(baseline)) assert.equal(digest(file), hash, file);
@@ -249,7 +271,6 @@ test('Hero web assets exist, use WebP and stay below a 700 KB desktop transfer b
 
 test('Hero ambient motion uses compact layered assets and mobile-aware animation branches', () => {
   const runtimeAssets = [
-    'vfx/hero-sky-tribulation-glow.webp',
     'environment/hero-bamboo-tips.webp',
     'vfx/hero-spirit-bird-flight-spritesheet.webp',
   ];
@@ -266,10 +287,13 @@ test('Hero ambient motion uses compact layered assets and mobile-aware animation
 
   const assets = readFileSync(at('src/data/hero-assets.ts'), 'utf8');
   const world = readFileSync(at('src/scene/environment/HeroWorld.tsx'), 'utf8');
-  for (const name of ['skyPulse', 'bambooTips', 'birdFlightSprite']) assert.ok(assets.includes(name), name);
+  for (const name of ['bambooTips', 'birdFlightSprite']) assert.ok(assets.includes(name), name);
   assert.match(world, /if \(!active \|\| !mesh\.current \|\| !material\.current\) return/);
   assert.match(world, /!mobile && <SpiritBirdFlights active=\{active\}/);
   assert.match(world, /!mobile && <AnimatedOverlay url=\{heroAssets\.bambooTips\}/);
+  assert.match(world, /function StormIllumination/);
+  assert.match(world, /float featherX = smoothstep\(0\.0, \.2, vUv\.x\)/);
+  assert.doesNotMatch(world, /heroAssets\.skyPulse/);
   assert.match(world, /environment\.values\.cloud/);
   assert.match(world, /environment\.thunderPulse/);
   assert.match(world, /float edgeMask = featherX \* featherY/);
